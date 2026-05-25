@@ -24,12 +24,15 @@ export type Vehicle = {
   createdAt: string;
 };
 
+export type SupabaseVehicleStatus = "available" | "reserved" | "sold" | "draft" | "published";
+
 export type Service = {
   id: string;
   title: string;
   description: string;
   href: string;
   badge?: string;
+  status?: "active" | "coming_soon" | "draft";
 };
 
 export type Inquiry = {
@@ -38,4 +41,30 @@ export type Inquiry = {
   vehicleName: string;
   date: string;
   status: "Nová" | "Zpracovává se" | "Vyřešeno";
+};
+
+export type CreateInquiryInput = {
+  type: string;
+  name?: string;
+  phone?: string;
+  email?: string;
+  vehicleId?: string;
+  message?: string;
+  sourcePage?: string;
+};
+
+export type CreateAppointmentRequestInput = {
+  vehicleId?: string;
+  name?: string;
+  phone?: string;
+  email?: string;
+  preferredDate?: string;
+  preferredTime?: string;
+  note?: string;
+};
+
+export type SubmissionResult = {
+  ok: boolean;
+  configured: boolean;
+  error?: string;
 };

@@ -8,6 +8,7 @@ export const services: Service[] = [
       "Možnost financování připravujeme. Služba bude dostupná až po dokončení spolupráce s finančními partnery.",
     href: "/sluzby#financovani",
     badge: "Připravujeme",
+    status: "coming_soon",
   },
   {
     id: "vykup",
