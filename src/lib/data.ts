@@ -57,12 +57,14 @@ export async function getVehicles(): Promise<Vehicle[]> {
       .in("status", publicVehicleStatuses)
       .order("created_at", { ascending: false });
 
-    if (error || !data?.length) {
+    if (error) {
+      warnSupabaseFallback("vehicles", error.message);
       return vehicles;
     }
 
-    return data.map(mapVehicleRow);
-  } catch {
+    return (data ?? []).map(mapVehicleRow);
+  } catch (error) {
+    warnSupabaseFallback("vehicles", getErrorMessage(error));
     return vehicles;
   }
 }
@@ -82,12 +84,14 @@ export async function getFeaturedVehicles(): Promise<Vehicle[]> {
       .in("status", publicVehicleStatuses)
       .order("created_at", { ascending: false });
 
-    if (error || !data?.length) {
+    if (error) {
+      warnSupabaseFallback("featured vehicles", error.message);
       return vehicles.filter((vehicle) => vehicle.featured);
     }
 
-    return data.map(mapVehicleRow);
-  } catch {
+    return (data ?? []).map(mapVehicleRow);
+  } catch (error) {
+    warnSupabaseFallback("featured vehicles", getErrorMessage(error));
     return vehicles.filter((vehicle) => vehicle.featured);
   }
 }
@@ -107,12 +111,18 @@ export async function getVehicleById(id: string): Promise<Vehicle | null> {
       .eq("id", id)
       .maybeSingle();
 
-    if (error || !data) {
+    if (error) {
+      warnSupabaseFallback("vehicle detail", error.message);
+      return localVehicle;
+    }
+
+    if (!data) {
       return localVehicle;
     }
 
     return mapVehicleRow(data);
-  } catch {
+  } catch (error) {
+    warnSupabaseFallback("vehicle detail", getErrorMessage(error));
     return localVehicle;
   }
 }
@@ -131,12 +141,14 @@ export async function getServices(): Promise<Service[]> {
       .in("status", ["active", "coming_soon"])
       .order("sort_order", { ascending: true });
 
-    if (error || !data?.length) {
+    if (error) {
+      warnSupabaseFallback("services", error.message);
       return services;
     }
 
-    return data.map(mapServiceRow);
-  } catch {
+    return (data ?? []).map(mapServiceRow);
+  } catch (error) {
+    warnSupabaseFallback("services", getErrorMessage(error));
     return services;
   }
 }
@@ -160,6 +172,7 @@ export async function createInquiry(input: CreateInquiryInput): Promise<Submissi
     });
 
     if (error) {
+      warnSupabaseFallback("inquiry insert", error.message);
       return { ok: false, configured: true, error: error.message };
     }
 
@@ -168,7 +181,7 @@ export async function createInquiry(input: CreateInquiryInput): Promise<Submissi
     return {
       ok: false,
       configured: true,
-      error: error instanceof Error ? error.message : "Unknown Supabase error",
+      error: getErrorMessage(error),
     };
   }
 }
@@ -194,6 +207,7 @@ export async function createAppointmentRequest(
     });
 
     if (error) {
+      warnSupabaseFallback("appointment request insert", error.message);
       return { ok: false, configured: true, error: error.message };
     }
 
@@ -202,7 +216,7 @@ export async function createAppointmentRequest(
     return {
       ok: false,
       configured: true,
-      error: error instanceof Error ? error.message : "Unknown Supabase error",
+      error: getErrorMessage(error),
     };
   }
 }
@@ -279,4 +293,12 @@ function isUuid(value?: string) {
 function emptyToNull(value?: string) {
   const normalized = value?.trim();
   return normalized ? normalized : null;
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown Supabase error";
+}
+
+function warnSupabaseFallback(context: string, message: string) {
+  console.warn(`[Supabase fallback] ${context}: ${message}`);
 }
