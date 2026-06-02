@@ -62,7 +62,12 @@ export async function getVehicles(): Promise<Vehicle[]> {
       return vehicles;
     }
 
-    return (data ?? []).map(mapVehicleRow);
+    if (!data?.length) {
+      warnSupabaseFallback("vehicles returned empty result");
+      return vehicles;
+    }
+
+    return data.map(mapVehicleRow);
   } catch (error) {
     warnSupabaseFallback("vehicles", getErrorMessage(error));
     return vehicles;
@@ -89,7 +94,12 @@ export async function getFeaturedVehicles(): Promise<Vehicle[]> {
       return vehicles.filter((vehicle) => vehicle.featured);
     }
 
-    return (data ?? []).map(mapVehicleRow);
+    if (!data?.length) {
+      warnSupabaseFallback("vehicles returned empty result");
+      return vehicles.filter((vehicle) => vehicle.featured);
+    }
+
+    return data.map(mapVehicleRow);
   } catch (error) {
     warnSupabaseFallback("featured vehicles", getErrorMessage(error));
     return vehicles.filter((vehicle) => vehicle.featured);
@@ -146,7 +156,12 @@ export async function getServices(): Promise<Service[]> {
       return services;
     }
 
-    return (data ?? []).map(mapServiceRow);
+    if (!data?.length) {
+      warnSupabaseFallback("services returned empty result");
+      return services;
+    }
+
+    return data.map(mapServiceRow);
   } catch (error) {
     warnSupabaseFallback("services", getErrorMessage(error));
     return services;
@@ -299,6 +314,6 @@ function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Unknown Supabase error";
 }
 
-function warnSupabaseFallback(context: string, message: string) {
-  console.warn(`[Supabase fallback] ${context}: ${message}`);
+function warnSupabaseFallback(context: string, message?: string) {
+  console.warn(`[Supabase fallback] ${message ? `${context}: ${message}` : context}`);
 }
