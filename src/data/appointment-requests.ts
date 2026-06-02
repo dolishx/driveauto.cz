@@ -1,0 +1,43 @@
+import type { AppointmentRequest } from "@/types";
+
+export const appointmentRequests: AppointmentRequest[] = [
+  {
+    id: "appt-001",
+    vehicleId: "veh-001",
+    vehicleName: "Škoda Superb Combi",
+    name: "Lokální žádost 1",
+    phone: "Bude doplněno",
+    email: "Bude doplněno",
+    preferredDate: "Bude doplněno",
+    preferredTime: "9:00",
+    note: "Žádost o osobní prohlídku vozu.",
+    status: "new",
+    createdAt: "Lokální fallback",
+  },
+  {
+    id: "appt-002",
+    vehicleId: "veh-002",
+    vehicleName: "BMW X3",
+    name: "Lokální žádost 2",
+    phone: "Bude doplněno",
+    email: "Bude doplněno",
+    preferredDate: "Bude doplněno",
+    preferredTime: "14:00",
+    note: "Termín je připravený k potvrzení v další fázi administrace.",
+    status: "scheduled",
+    createdAt: "Lokální fallback",
+  },
+  {
+    id: "appt-003",
+    vehicleId: "veh-006",
+    vehicleName: "BMW X6 M",
+    name: "Lokální žádost 3",
+    phone: "Bude doplněno",
+    email: "Bude doplněno",
+    preferredDate: "Bude doplněno",
+    preferredTime: "16:00",
+    note: "Ukázkový záznam pro kontrolu workflow.",
+    status: "contacted",
+    createdAt: "Lokální fallback",
+  },
+];

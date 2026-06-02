@@ -1,15 +1,20 @@
+import { appointmentRequests } from "@/data/appointment-requests";
 import { inquiries } from "@/data/inquiries";
 import { services } from "@/data/services";
 import { vehicles } from "@/data/vehicles";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import type {
+  AppointmentRequest,
   CreateAppointmentRequestInput,
   CreateInquiryInput,
   CreateVehicleInput,
   FuelType,
+  Inquiry,
+  LeadStatus,
   Service,
   SubmissionResult,
   TransmissionType,
+  UpdateLeadStatusInput,
   Vehicle,
   VehicleCategory,
   VehicleStatus,
@@ -41,7 +46,44 @@ type ServiceRow = {
   badge: string | null;
 };
 
+type RelatedVehicleRow = {
+  brand: string | null;
+  model: string | null;
+  title: string | null;
+};
+
+type RelatedVehicleValue = RelatedVehicleRow | RelatedVehicleRow[] | null;
+
+type InquiryRow = {
+  id: string;
+  type: string | null;
+  name: string | null;
+  phone: string | null;
+  email: string | null;
+  vehicle_id: string | null;
+  message: string | null;
+  status: string | null;
+  source_page: string | null;
+  created_at: string | null;
+  vehicle?: RelatedVehicleValue;
+};
+
+type AppointmentRequestRow = {
+  id: string;
+  vehicle_id: string | null;
+  name: string | null;
+  phone: string | null;
+  email: string | null;
+  preferred_date: string | null;
+  preferred_time: string | null;
+  note: string | null;
+  status: string | null;
+  created_at: string | null;
+  vehicle?: RelatedVehicleValue;
+};
+
 const publicVehicleStatuses = ["available", "reserved", "published"];
+const leadStatuses: LeadStatus[] = ["new", "contacted", "scheduled", "completed", "closed"];
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function getVehicles(): Promise<Vehicle[]> {
@@ -322,8 +364,145 @@ export async function createVehicle(input: CreateVehicleInput): Promise<Submissi
   }
 }
 
-export async function getInquiries() {
-  return inquiries;
+export async function getInquiries(): Promise<Inquiry[]> {
+  const supabase = getSupabaseClient();
+
+  if (!supabase) {
+    return inquiries;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("inquiries")
+      .select("id,type,name,phone,email,vehicle_id,message,status,source_page,created_at,vehicle:vehicles(brand,model,title)")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      warnSupabaseFallback("inquiries", error.message);
+      return inquiries;
+    }
+
+    if (!data?.length) {
+      warnSupabaseFallback("inquiries returned empty result");
+      return inquiries;
+    }
+
+    return data.map((row) => mapInquiryRow(row as unknown as InquiryRow));
+  } catch (error) {
+    warnSupabaseFallback("inquiries", getErrorMessage(error));
+    return inquiries;
+  }
+}
+
+export async function getAppointmentRequests(): Promise<AppointmentRequest[]> {
+  const supabase = getSupabaseClient();
+
+  if (!supabase) {
+    return appointmentRequests;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("appointment_requests")
+      .select("id,vehicle_id,name,phone,email,preferred_date,preferred_time,note,status,created_at,vehicle:vehicles(brand,model,title)")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      warnSupabaseFallback("appointment requests", error.message);
+      return appointmentRequests;
+    }
+
+    if (!data?.length) {
+      warnSupabaseFallback("appointment requests returned empty result");
+      return appointmentRequests;
+    }
+
+    return data.map((row) => mapAppointmentRequestRow(row as unknown as AppointmentRequestRow));
+  } catch (error) {
+    warnSupabaseFallback("appointment requests", getErrorMessage(error));
+    return appointmentRequests;
+  }
+}
+
+export async function updateInquiryStatus(input: UpdateLeadStatusInput): Promise<SubmissionResult> {
+  const supabase = getSupabaseClient();
+
+  if (!leadStatuses.includes(input.status)) {
+    return { ok: false, configured: Boolean(supabase), error: "Neplatný status poptávky." };
+  }
+
+  if (!supabase) {
+    return {
+      ok: false,
+      configured: false,
+      error: "Změna statusu vyžaduje admin policy nebo server-side action.",
+    };
+  }
+
+  if (!isUuid(input.id)) {
+    return {
+      ok: false,
+      configured: true,
+      error: "Změna statusu vyžaduje admin policy nebo server-side action.",
+    };
+  }
+
+  const tableName = input.entity === "appointment" ? "appointment_requests" : "inquiries";
+
+  try {
+    const { error } = await supabase
+      .from(tableName)
+      .update({ status: input.status })
+      .eq("id", input.id);
+
+    if (error) {
+      const message = isRlsError(error.message)
+        ? "Změna statusu vyžaduje admin policy nebo server-side action."
+        : error.message;
+      warnSupabaseFallback(`${tableName} status update`, message);
+      return { ok: false, configured: true, error: message };
+    }
+
+    return { ok: true, configured: true };
+  } catch (error) {
+    return {
+      ok: false,
+      configured: true,
+      error: getErrorMessage(error),
+    };
+  }
+}
+
+function mapInquiryRow(row: InquiryRow): Inquiry {
+  return {
+    id: row.id,
+    type: row.type || "Poptávka",
+    name: row.name || "Bez jména",
+    phone: row.phone || "Bude doplněno",
+    email: row.email || "Bude doplněno",
+    vehicleId: row.vehicle_id ?? undefined,
+    vehicleName: relatedVehicleName(row.vehicle) || "Bez vybraného vozu",
+    message: row.message || "Bez zprávy",
+    status: normalizeLeadStatus(row.status),
+    sourcePage: row.source_page || "Neuvedeno",
+    createdAt: row.created_at ? formatDateTime(row.created_at) : "Neuvedeno",
+  };
+}
+
+function mapAppointmentRequestRow(row: AppointmentRequestRow): AppointmentRequest {
+  return {
+    id: row.id,
+    vehicleId: row.vehicle_id ?? undefined,
+    vehicleName: relatedVehicleName(row.vehicle) || "Bez vybraného vozu",
+    name: row.name || "Bez jména",
+    phone: row.phone || "Bude doplněno",
+    email: row.email || "Bude doplněno",
+    preferredDate: row.preferred_date || "Neuvedeno",
+    preferredTime: row.preferred_time || "Neuvedeno",
+    note: row.note || "Bez poznámky",
+    status: normalizeLeadStatus(row.status),
+    createdAt: row.created_at ? formatDateTime(row.created_at) : "Neuvedeno",
+  };
 }
 
 function mapVehicleRow(row: VehicleRow): Vehicle {
@@ -369,6 +548,13 @@ function normalizeAdminStatus(status?: string) {
   if (status === "published") return "published";
   if (status === "draft") return "draft";
   return "available";
+}
+
+function normalizeLeadStatus(status: string | null): LeadStatus {
+  if (status && leadStatuses.includes(status as LeadStatus)) {
+    return status as LeadStatus;
+  }
+  return "new";
 }
 
 function normalizeFuel(fuel: string | null): FuelType {
@@ -417,6 +603,26 @@ function toNumberOrNull(value?: string) {
 function normalizeImageUrl(value?: string) {
   const normalized = value?.trim();
   return normalized || "/images/car-superb.jpg";
+}
+
+function relatedVehicleName(vehicle?: RelatedVehicleValue) {
+  if (!vehicle) return "";
+  const normalized = Array.isArray(vehicle) ? vehicle[0] : vehicle;
+  if (!normalized) return "";
+  return [normalized.brand, normalized.model, normalized.title].filter(Boolean).join(" ");
+}
+
+function formatDateTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat("cs-CZ", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
 function getErrorMessage(error: unknown) {

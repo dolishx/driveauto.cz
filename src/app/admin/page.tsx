@@ -13,10 +13,11 @@ import Image from "next/image";
 
 import { AddVehicleForm } from "@/components/admin/add-vehicle-form";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import { LeadManagement } from "@/components/admin/lead-management";
 import { ButtonLink } from "@/components/ui/button";
-import { getAdminVehicles, getInquiries } from "@/lib/data";
+import { getAdminVehicles, getAppointmentRequests, getInquiries } from "@/lib/data";
 import { formatMileage, formatPrice } from "@/lib/format";
-import type { Inquiry, Vehicle } from "@/types";
+import type { Vehicle } from "@/types";
 
 const managementCards = [
   {
@@ -52,16 +53,22 @@ const managementCards = [
 ];
 
 export default async function AdminPage() {
-  const [vehicles, inquiries] = await Promise.all([getAdminVehicles(), getInquiries()]);
+  const [vehicles, inquiries, appointmentRequests] = await Promise.all([
+    getAdminVehicles(),
+    getInquiries(),
+    getAppointmentRequests(),
+  ]);
   const activeVehicles = vehicles.filter((vehicle) => vehicle.status === "Dostupné" || vehicle.status === "Rezervováno");
   const soldVehicles = vehicles.filter((vehicle) => vehicle.status === "Prodáno");
-  const newInquiries = inquiries.filter((inquiry) => inquiry.status === "Nová");
+  const newLeadCount =
+    inquiries.filter((inquiry) => inquiry.status === "new").length +
+    appointmentRequests.filter((request) => request.status === "new").length;
 
   const stats = [
     { label: "Celkem vozů", value: vehicles.length, helper: "Vozidla načtená pro administraci", icon: Car },
     { label: "Aktivní vozy", value: activeVehicles.length, helper: "Dostupné a rezervované vozy", icon: CheckCircle2 },
     { label: "Prodané vozy", value: soldVehicles.length, helper: "Vozy označené jako prodané", icon: Tag },
-    { label: "Nové poptávky", value: newInquiries.length, helper: "Nové položky v přehledu poptávek", icon: MessageSquare },
+    { label: "Nové poptávky", value: newLeadCount, helper: "Nové kontakty a žádosti o prohlídku", icon: MessageSquare },
   ];
 
   return (
@@ -129,10 +136,11 @@ export default async function AdminPage() {
               })}
             </section>
 
-            <section className="mt-7 grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+            <section className="mt-7">
               <LatestVehiclesTable vehicles={vehicles.slice(0, 5)} />
-              <RecentInquiriesTable inquiries={inquiries.slice(0, 5)} />
             </section>
+
+            <LeadManagement inquiries={inquiries} appointmentRequests={appointmentRequests} />
 
             <section id="vsechny-vozy" className="mt-7 rounded-2xl border border-brand-line bg-white p-5 shadow-sm sm:p-6">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -261,43 +269,6 @@ function LatestVehiclesTable({ vehicles }: { vehicles: Vehicle[] }) {
                   <StatusBadge status={vehicle.status} />
                 </td>
                 <td className="py-4 text-brand-muted">{vehicle.createdAt || "Lokální fallback"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
-
-function RecentInquiriesTable({ inquiries }: { inquiries: Inquiry[] }) {
-  return (
-    <section id="poptavky" className="min-w-0 rounded-2xl border border-brand-line bg-white p-5 shadow-sm sm:p-6">
-      <div className="mb-5">
-        <h2 className="text-xl font-bold">Nové a poslední poptávky</h2>
-        <p className="mt-1 text-sm text-brand-muted">
-          Přehled používá lokální MVP data, čtení reálných poptávek bude doplněno po zabezpečení administrace.
-        </p>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[520px] text-left text-sm">
-          <thead className="text-xs uppercase tracking-wide text-brand-muted">
-            <tr className="border-b border-brand-line">
-              <th className="py-3 font-bold">Kontakt</th>
-              <th className="py-3 font-bold">Vůz / téma</th>
-              <th className="py-3 font-bold">Stav</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inquiries.map((inquiry) => (
-              <tr key={inquiry.id} className="border-b border-brand-line last:border-b-0">
-                <td className="py-4 font-bold text-brand-navy">{inquiry.customerName}</td>
-                <td className="py-4 text-brand-muted">{inquiry.vehicleName}</td>
-                <td className="py-4">
-                  <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-bold text-brand-blue">
-                    {inquiry.status}
-                  </span>
-                </td>
               </tr>
             ))}
           </tbody>

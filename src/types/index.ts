@@ -35,12 +35,34 @@ export type Service = {
   status?: "active" | "coming_soon" | "draft";
 };
 
+export type LeadStatus = "new" | "contacted" | "scheduled" | "completed" | "closed";
+
 export type Inquiry = {
   id: string;
-  customerName: string;
+  type: string;
+  name: string;
+  phone: string;
+  email: string;
+  vehicleId?: string;
   vehicleName: string;
-  date: string;
-  status: "Nová" | "Zpracovává se" | "Vyřešeno";
+  message: string;
+  status: LeadStatus;
+  sourcePage: string;
+  createdAt: string;
+};
+
+export type AppointmentRequest = {
+  id: string;
+  vehicleId?: string;
+  vehicleName: string;
+  name: string;
+  phone: string;
+  email: string;
+  preferredDate: string;
+  preferredTime: string;
+  note: string;
+  status: LeadStatus;
+  createdAt: string;
 };
 
 export type CreateInquiryInput = {
@@ -79,6 +101,12 @@ export type CreateVehicleInput = {
   engine?: string;
   description?: string;
   imageUrl?: string;
+};
+
+export type UpdateLeadStatusInput = {
+  id: string;
+  status: LeadStatus;
+  entity?: "inquiry" | "appointment";
 };
 
 export type SubmissionResult = {
