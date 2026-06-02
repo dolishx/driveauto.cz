@@ -53,8 +53,8 @@ export function PublicHeader() {
           <div className="flex items-center gap-3">
             <Phone className="h-5 w-5 fill-brand-navy text-brand-navy" />
             <span className="leading-tight">
-              <span className="block text-base font-bold">Bude doplněno</span>
-              <span className="block text-xs text-brand-muted">Telefon</span>
+              <span className="block text-base font-bold">Kontakt DriveAuto</span>
+              <span className="block text-xs text-brand-muted">Přes formulář</span>
             </span>
           </div>
           <ButtonLink href="/domluvit-prohlidku">

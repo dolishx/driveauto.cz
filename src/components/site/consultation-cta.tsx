@@ -1,4 +1,14 @@
-import { ArrowRight, BadgeCheck, Calendar, Headphones, Phone, ShieldCheck, Wallet } from "lucide-react";
+import {
+  ArrowRight,
+  BadgeCheck,
+  Car,
+  ClipboardCheck,
+  Handshake,
+  Headphones,
+  Phone,
+  ShieldCheck,
+  Wallet,
+} from "lucide-react";
 import Image from "next/image";
 
 import { ButtonLink } from "@/components/ui/button";
@@ -11,17 +21,25 @@ const miniBenefits = [
     icon: Wallet,
   },
   { title: "Záruka kvality", text: "Možnost prodloužené záruky až na 36 měsíců.", icon: BadgeCheck },
-  { title: "Rychlý kontakt", text: "Jsme tu pro vás každý pracovní den.", icon: Headphones },
+  { title: "Rychlý kontakt", text: "Pošlete dotaz a navážeme na konkrétní situaci.", icon: Headphones },
+];
+
+const ctaActions = [
+  { href: "/nabidka-vozu", label: "Prohlédnout vozy", icon: Car },
+  { href: "/kontakt?typ=prodej", label: "Prodat vůz", icon: Handshake },
+  { href: "/kontakt?typ=dovoz", label: "Dovoz vozu", icon: ClipboardCheck },
 ];
 
 export function ConsultationCta({
   title = "Nevíte si rady s výběrem?",
   subtitle = "Pomůžeme vám najít ideální vůz podle vašich představ, rozpočtu i potřeb.",
   buttonLabel = "Nezávazná konzultace",
+  buttonHref = "/kontakt",
 }: {
   title?: string;
   subtitle?: string;
   buttonLabel?: string;
+  buttonHref?: string;
 }) {
   return (
     <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -57,20 +75,36 @@ export function ConsultationCta({
                 <Phone className="h-8 w-8 fill-brand-blue" />
               </span>
               <span>
-                <span className="block text-brand-muted">Telefon</span>
-                <span className="block text-3xl font-bold text-brand-navy">Bude doplněno</span>
+                <span className="block text-brand-muted">Kontakt DriveAuto</span>
+                <span className="block text-2xl font-bold text-brand-navy">Formulář a prohlídka</span>
                 <span className="block text-sm text-brand-muted">
-                  Kontaktní údaje budou doplněny po potvrzení finálních údajů provozovatele.
+                  Telefon zveřejníme po potvrzení finálních kontaktních údajů.
                 </span>
               </span>
             </div>
-            <ButtonLink href="/domluvit-prohlidku" className="h-16 justify-between px-7 text-base">
+            <ButtonLink href={buttonHref} className="h-16 justify-between px-7 text-base">
               <span className="inline-flex items-center gap-3">
-                <Calendar className="h-5 w-5" />
+                <Headphones className="h-5 w-5" />
                 {buttonLabel}
               </span>
               <ArrowRight className="h-5 w-5" />
             </ButtonLink>
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+              {ctaActions.map((action) => {
+                const Icon = action.icon;
+                return (
+                  <ButtonLink
+                    key={action.href}
+                    href={action.href}
+                    variant="secondary"
+                    className="h-12 justify-start px-4"
+                  >
+                    <Icon className="h-4 w-4" />
+                    {action.label}
+                  </ButtonLink>
+                );
+              })}
+            </div>
           </div>
         </div>
 

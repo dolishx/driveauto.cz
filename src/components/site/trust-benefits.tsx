@@ -1,50 +1,69 @@
-import { Headphones, ShieldCheck, Wallet } from "lucide-react";
+import { ClipboardCheck, FileText, Handshake, Headphones, ShieldCheck } from "lucide-react";
 
 const benefits = [
   {
-    title: "Prověřený původ",
-    description: "Každý vůz důkladně prověřujeme po technické i právní stránce.",
+    title: "Férové jednání",
+    description: "Vysvětlíme stav, cenu i další kroky tak, aby bylo rozhodnutí přehledné.",
+    icon: Handshake,
+  },
+  {
+    title: "Ověřené vozy",
+    description: "U nabízených aut řešíme původ, technický stav a připravenost k prodeji.",
     icon: ShieldCheck,
   },
   {
-    title: "Financování připravujeme",
-    description:
-      "Možnost financování bude dostupná až po dokončení spolupráce s finančními partnery.",
-    icon: Wallet,
+    title: "Pomoc s dokumenty",
+    description: "Pomůžeme s přihlášením, přípravou podkladů a návaznými kroky kolem vozu.",
+    icon: FileText,
   },
   {
-    title: "Záruka kvality",
-    description: "Možnost prodloužené záruky a garance na původ vozu.",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Rychlý kontakt",
-    description: "Jsme tu pro vás každý pracovní den od 8:00 do 18:00.",
+    title: "Reálný kontakt",
+    description: "Domluvíte další postup přímo přes DriveAuto, ne přes anonymní formulář bez kontextu.",
     icon: Headphones,
+  },
+  {
+    title: "Kompletní služby kolem auta",
+    description: "Koupě, prodej, výkup, dovoz, přihlášení i STK řešíme jako jeden navazující postup.",
+    icon: ClipboardCheck,
   },
 ];
 
 export function TrustBenefits() {
   return (
-    <section id="vyhody" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div className="grid rounded-2xl border border-brand-line bg-white shadow-[0_18px_45px_rgba(8,23,52,0.07)] md:grid-cols-4">
-        {benefits.map((benefit) => {
-          const Icon = benefit.icon;
-          return (
-            <div
-              key={benefit.title}
-              className="flex gap-4 p-6 text-left md:block md:border-l md:border-brand-line md:text-center first:md:border-l-0"
-            >
-              <Icon className="h-11 w-11 shrink-0 text-brand-blue md:mx-auto md:h-14 md:w-14" />
-              <h3 className="mt-0 text-lg font-bold text-brand-navy md:mt-6">
-                {benefit.title}
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-brand-muted">
-                {benefit.description}
-              </p>
-            </div>
-          );
-        })}
+    <section id="vyhody" className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+      <div className="grid gap-8 rounded-3xl border border-brand-line bg-white p-6 shadow-[0_18px_45px_rgba(8,23,52,0.07)] md:p-8 lg:grid-cols-[0.72fr_1.28fr] lg:p-10">
+        <div>
+          <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">
+            Proč DriveAuto
+          </p>
+          <h2 className="mt-4 text-4xl font-bold tracking-[-0.055em] text-brand-navy md:text-5xl">
+            Důvěra u auta začíná jasnou komunikací
+          </h2>
+          <p className="mt-5 text-lg leading-8 text-brand-muted">
+            Auto není drobný nákup. Proto držíme postup konkrétní, bez nejasných slibů
+            a bez tlaku na rychlé rozhodnutí.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          {benefits.map((benefit) => {
+            const Icon = benefit.icon;
+            return (
+              <article
+                key={benefit.title}
+                className="rounded-2xl border border-brand-line bg-brand-soft/65 p-5"
+              >
+                <Icon className="h-9 w-9 text-brand-blue" />
+                <h3 className="mt-4 text-lg font-bold text-brand-navy">
+                  {benefit.title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-brand-muted">
+                  {benefit.description}
+                </p>
+              </article>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
