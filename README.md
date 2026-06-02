@@ -1,6 +1,6 @@
-# AutoDrive MVP
+# DriveAuto MVP
 
-AutoDrive MVP is a Czech car dealership website for presenting verified vehicles, dealership services, contact information, appointment booking, and a simple MVP admin overview.
+DriveAuto MVP is a Czech car dealership website for presenting verified vehicles, dealership services, contact information, appointment booking, and a simple MVP admin overview.
 
 ## Stack
 

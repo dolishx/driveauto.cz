@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AutoDrive | Prověřené vozy",
+  title: "DriveAuto | Prověřené vozy",
   description:
-    "AutoDrive - autoprodejna ověřených vozů s připravenou nabídkou vozů, službami a osobními prohlídkami.",
+    "DriveAuto — autoprodejna ověřených vozů s připravenou nabídkou vozů, službami a osobními prohlídkami.",
 };
 
 export default function RootLayout({

@@ -20,7 +20,7 @@ export default async function VehicleOfferPage() {
               Vyberte si prověřený vůz připravený k prohlídce
             </h1>
             <p className="mt-5 text-lg leading-8 text-brand-muted">
-              Aktuální nabídka vozů AutoDrive s jasným původem, férovou cenou a možností osobní prohlídky.
+              Aktuální nabídka vozů DriveAuto s jasným původem, férovou cenou a možností osobní prohlídky.
             </p>
           </div>
           <SearchBar className="mt-8" />
@@ -82,7 +82,7 @@ export default async function VehicleOfferPage() {
               </p>
             </div>
             <ButtonLink href="/kontakt" className="mt-5 md:mt-0">
-              Kontaktovat AutoDrive <ArrowRight className="h-4 w-4" />
+              Kontaktovat DriveAuto <ArrowRight className="h-4 w-4" />
             </ButtonLink>
           </div>
         </div>

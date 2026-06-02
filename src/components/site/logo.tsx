@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-3" aria-label="AutoDrive domů">
+    <Link href="/" className="flex items-center gap-3" aria-label="DriveAuto domů">
       <span className="flex h-9 w-12 items-center justify-center text-brand-blue">
         <svg viewBox="0 0 58 36" className="h-8 w-12" aria-hidden="true">
           <path
@@ -20,7 +20,7 @@ export function Logo() {
         </svg>
       </span>
       <span className="text-2xl font-bold tracking-[-0.03em] text-brand-navy">
-        AutoDrive
+        DriveAuto
       </span>
     </Link>
   );

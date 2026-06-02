@@ -34,7 +34,7 @@ export default async function AdminPage() {
             <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-bold uppercase tracking-wide text-brand-blue lg:hidden">
-                  AutoDrive Admin
+                  DriveAuto Admin
                 </p>
                 <h1 className="text-3xl font-bold tracking-[-0.04em]">Přehled</h1>
               </div>
@@ -177,8 +177,8 @@ export default async function AdminPage() {
             </section>
 
             <footer className="mt-8 flex flex-col gap-2 text-sm text-brand-muted sm:flex-row sm:items-center sm:justify-between">
-              <p>AutoDrive Admin Panel</p>
-              <p>© 2024 AutoDrive. Verze 1.0.0</p>
+              <p>DriveAuto Admin Panel</p>
+              <p>© 2024 DriveAuto. Verze 1.0.0</p>
             </footer>
           </div>
         </main>

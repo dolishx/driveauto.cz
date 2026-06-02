@@ -18,7 +18,7 @@ export default async function HomePage() {
         <div className="mx-auto grid max-w-7xl items-center gap-5 px-4 py-8 sm:px-6 lg:grid-cols-[0.38fr_0.62fr] lg:items-start lg:px-8 lg:py-3">
           <div className="relative z-10 max-w-[520px]">
             <p className="inline-flex rounded-md bg-brand-soft px-3 py-2 text-xs font-bold uppercase tracking-wide text-brand-blue">
-              Autoprodejna AutoDrive
+              DriveAuto — autoprodejna ověřených vozů
             </p>
             <h1 className="mt-4 text-5xl font-bold leading-[0.98] tracking-[-0.055em] text-brand-navy lg:text-[56px]">
               Prověřené vozy. <span className="text-brand-blue">Jistý výběr.</span>
@@ -42,7 +42,7 @@ export default async function HomePage() {
           <div className="relative h-72 overflow-hidden rounded-2xl lg:h-[286px] lg:rounded-none">
             <Image
               src="/images/home-hero.jpg"
-              alt="Prémiové vozy BMW v nabídce AutoDrive"
+              alt="Prémiové vozy BMW v nabídce DriveAuto"
               fill
               priority
               fetchPriority="high"

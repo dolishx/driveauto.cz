@@ -19,7 +19,7 @@ export function MapCard() {
       <div className="relative min-h-56 bg-brand-soft">
         <Image
           src="/images/map-placeholder.jpg"
-          alt="Orientační mapový podklad pro AutoDrive"
+          alt="Orientační mapový podklad pro DriveAuto"
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, 450px"
