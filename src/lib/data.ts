@@ -137,6 +137,11 @@ export async function getVehicleById(id: string): Promise<Vehicle | null> {
   }
 }
 
+export async function getVehicleBySlug(slug: string): Promise<Vehicle | null> {
+  const currentVehicles = await getVehicles();
+  return currentVehicles.find((vehicle) => vehicle.slug === slug) ?? null;
+}
+
 export async function getServices(): Promise<Service[]> {
   const supabase = getSupabaseClient();
 
