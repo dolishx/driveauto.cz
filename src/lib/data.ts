@@ -5,6 +5,7 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 import type {
   CreateAppointmentRequestInput,
   CreateInquiryInput,
+  CreateVehicleInput,
   FuelType,
   Service,
   SubmissionResult,
@@ -142,6 +143,36 @@ export async function getVehicleBySlug(slug: string): Promise<Vehicle | null> {
   return currentVehicles.find((vehicle) => vehicle.slug === slug) ?? null;
 }
 
+export async function getAdminVehicles(): Promise<Vehicle[]> {
+  const supabase = getSupabaseClient();
+
+  if (!supabase) {
+    return vehicles;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("vehicles")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      warnSupabaseFallback("admin vehicles", error.message);
+      return vehicles;
+    }
+
+    if (!data?.length) {
+      warnSupabaseFallback("admin vehicles returned empty result");
+      return vehicles;
+    }
+
+    return data.map(mapVehicleRow);
+  } catch (error) {
+    warnSupabaseFallback("admin vehicles", getErrorMessage(error));
+    return vehicles;
+  }
+}
+
 export async function getServices(): Promise<Service[]> {
   const supabase = getSupabaseClient();
 
@@ -241,6 +272,56 @@ export async function createAppointmentRequest(
   }
 }
 
+export async function createVehicle(input: CreateVehicleInput): Promise<SubmissionResult> {
+  const supabase = getSupabaseClient();
+
+  if (!supabase) {
+    return {
+      ok: false,
+      configured: false,
+      error: "Supabase není nakonfigurovaný. Ukládání vozu je připravené pro další fázi.",
+    };
+  }
+
+  try {
+    const { error } = await supabase.from("vehicles").insert({
+      title: requiredText(input.title),
+      brand: requiredText(input.brand),
+      model: requiredText(input.model),
+      year: toNumberOrNull(input.year),
+      mileage: toNumberOrNull(input.mileage),
+      fuel: emptyToNull(input.fuel),
+      transmission: emptyToNull(input.transmission),
+      price_czk: toNumberOrNull(input.priceCzk),
+      category: "Osobní vozy",
+      color: emptyToNull(input.color),
+      power_kw: toNumberOrNull(input.powerKw),
+      engine: emptyToNull(input.engine),
+      license_plate: emptyToNull(input.licensePlate),
+      status: normalizeAdminStatus(input.status),
+      is_featured: false,
+      image_url: normalizeImageUrl(input.imageUrl),
+      description: emptyToNull(input.description),
+    });
+
+    if (error) {
+      const message = isRlsError(error.message)
+        ? "Ukládání vozu vyžaduje admin policy nebo server-side action."
+        : error.message;
+      warnSupabaseFallback("vehicle insert", message);
+      return { ok: false, configured: true, error: message };
+    }
+
+    return { ok: true, configured: true };
+  } catch (error) {
+    return {
+      ok: false,
+      configured: true,
+      error: getErrorMessage(error),
+    };
+  }
+}
+
 export async function getInquiries() {
   return inquiries;
 }
@@ -282,6 +363,14 @@ function normalizeVehicleStatus(status: string | null): VehicleStatus {
   return "Dostupné";
 }
 
+function normalizeAdminStatus(status?: string) {
+  if (status === "reserved") return "reserved";
+  if (status === "sold") return "sold";
+  if (status === "published") return "published";
+  if (status === "draft") return "draft";
+  return "available";
+}
+
 function normalizeFuel(fuel: string | null): FuelType {
   if (fuel === "Benzin" || fuel === "Hybrid" || fuel === "Elektro") return fuel;
   return "Nafta";
@@ -315,8 +404,28 @@ function emptyToNull(value?: string) {
   return normalized ? normalized : null;
 }
 
+function requiredText(value?: string) {
+  return value?.trim() || "Bez názvu";
+}
+
+function toNumberOrNull(value?: string) {
+  if (!value?.trim()) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizeImageUrl(value?: string) {
+  const normalized = value?.trim();
+  return normalized || "/images/car-superb.jpg";
+}
+
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Unknown Supabase error";
+}
+
+function isRlsError(message: string) {
+  const normalized = message.toLowerCase();
+  return normalized.includes("row-level security") || normalized.includes("rls") || normalized.includes("policy");
 }
 
 function warnSupabaseFallback(context: string, message?: string) {

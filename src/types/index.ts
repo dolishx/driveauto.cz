@@ -63,6 +63,24 @@ export type CreateAppointmentRequestInput = {
   note?: string;
 };
 
+export type CreateVehicleInput = {
+  title: string;
+  brand: string;
+  model: string;
+  year?: string;
+  mileage?: string;
+  fuel?: string;
+  transmission?: string;
+  priceCzk?: string;
+  status?: string;
+  licensePlate?: string;
+  color?: string;
+  powerKw?: string;
+  engine?: string;
+  description?: string;
+  imageUrl?: string;
+};
+
 export type SubmissionResult = {
   ok: boolean;
   configured: boolean;
