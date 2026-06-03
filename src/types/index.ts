@@ -19,6 +19,7 @@ export type Vehicle = {
   price: number;
   status: VehicleStatus;
   image: string;
+  gallery?: string[];
   category: VehicleCategory;
   featured: boolean;
   createdAt: string;

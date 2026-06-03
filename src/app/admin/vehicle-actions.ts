@@ -11,6 +11,14 @@ import type { SubmissionResult, SupabaseVehicleStatus } from "@/types";
 
 const missingServiceRoleMessage = "Správa vozů vyžaduje serverový Supabase klíč.";
 const missingSessionMessage = "Administrace vyžaduje platné přihlášení.";
+const vehicleImageBucket = "vehicle-images";
+const maxVehicleImageSize = 5 * 1024 * 1024;
+const allowedVehicleImageTypes = new Map([
+  ["image/jpeg", "jpg"],
+  ["image/png", "png"],
+  ["image/webp", "webp"],
+]);
+const uploadFailureMessage = "Nahrání fotografie se nepodařilo. Můžete vložit URL obrázku ručně.";
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const vehicleStatuses: SupabaseVehicleStatus[] = [
   "available",
@@ -50,6 +58,18 @@ export async function createVehicleAction(
     title: title.value,
     year,
   });
+  const imageUpload = await uploadVehicleImage({
+    supabase,
+    imageFile: formData.get("imageFile"),
+    slug,
+  });
+
+  if (!imageUpload.ok) {
+    return imageUpload;
+  }
+
+  const uploadedImageUrl = imageUpload.publicUrl;
+  const imageUrl = uploadedImageUrl || normalizeImageUrl(textValue(formData.get("imageUrl")));
 
   try {
     const { data, error } = await supabase
@@ -72,7 +92,8 @@ export async function createVehicleAction(
         license_plate: emptyToNull(textValue(formData.get("licensePlate"))),
         status: normalizeVehicleStatus(textValue(formData.get("status"))),
         is_featured: formData.get("isFeatured") === "on",
-        image_url: normalizeImageUrl(textValue(formData.get("imageUrl"))),
+        image_url: imageUrl,
+        gallery_urls: uploadedImageUrl ? [uploadedImageUrl] : null,
         description: emptyToNull(textValue(formData.get("description"))),
       })
       .select("id,slug")
@@ -226,6 +247,72 @@ async function assertAdminMutationAllowed(): Promise<VehicleMutationState | null
   }
 
   return null;
+}
+
+async function uploadVehicleImage({
+  supabase,
+  imageFile,
+  slug,
+}: {
+  supabase: NonNullable<ReturnType<typeof getSupabaseServiceClient>>;
+  imageFile: FormDataEntryValue | null;
+  slug: string;
+}): Promise<VehicleMutationState & { publicUrl?: string }> {
+  if (!isUploadFile(imageFile)) {
+    return { ok: true, configured: true };
+  }
+
+  const extension = allowedVehicleImageTypes.get(imageFile.type);
+
+  if (!extension) {
+    return {
+      ok: false,
+      configured: true,
+      error: "Fotografie musí být ve formátu JPG, PNG nebo WebP.",
+    };
+  }
+
+  if (imageFile.size > maxVehicleImageSize) {
+    return {
+      ok: false,
+      configured: true,
+      error: "Fotografie může mít maximálně 5 MB.",
+    };
+  }
+
+  const storagePath = `${slug}/${Date.now()}-${randomUUID()}.${extension}`;
+
+  try {
+    const { error } = await supabase.storage
+      .from(vehicleImageBucket)
+      .upload(storagePath, await imageFile.arrayBuffer(), {
+        contentType: imageFile.type,
+        upsert: false,
+      });
+
+    if (error) {
+      console.error("[Supabase storage] vehicle image upload failed", error.message);
+      return { ok: false, configured: true, error: uploadFailureMessage };
+    }
+
+    const { data } = supabase.storage.from(vehicleImageBucket).getPublicUrl(storagePath);
+
+    return {
+      ok: true,
+      configured: true,
+      publicUrl: data.publicUrl,
+    };
+  } catch (error) {
+    console.error(
+      "[Supabase storage] vehicle image upload failed",
+      error instanceof Error ? error.message : error,
+    );
+    return { ok: false, configured: true, error: uploadFailureMessage };
+  }
+}
+
+function isUploadFile(value: FormDataEntryValue | null): value is File {
+  return typeof File !== "undefined" && value instanceof File && value.size > 0;
 }
 
 async function createUniqueVehicleSlug({

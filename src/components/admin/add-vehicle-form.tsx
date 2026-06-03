@@ -1,6 +1,6 @@
 "use client";
 
-import { Car, Image as ImageIcon, Save, ShieldAlert } from "lucide-react";
+import { Car, Image as ImageIcon, Save, ShieldAlert, Upload } from "lucide-react";
 import { useActionState, useEffect, useRef, type ReactNode } from "react";
 
 import { createVehicleAction } from "@/app/admin/vehicle-actions";
@@ -76,12 +76,26 @@ export function AddVehicleForm({ canManageVehicles }: { canManageVehicles: boole
         <Input name="powerKw" label="Výkon kW" placeholder="147" type="number" />
         <Input name="engine" label="Motor" placeholder="Např. 2.0 TDI" />
         <Input name="bodyType" label="Karoserie" placeholder="Např. kombi, SUV" />
+        <Field label="Fotografie vozu" icon={<Upload className="h-4 w-4" />}>
+          <input
+            name="imageFile"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="rounded-lg border border-brand-line bg-white px-3 py-2 text-sm text-brand-muted file:mr-4 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-2 file:text-sm file:font-bold file:text-brand-blue hover:file:bg-blue-100 focus:border-brand-blue focus:outline-none"
+          />
+          <span className="text-xs leading-5 text-brand-muted">
+            Nahrajte hlavní fotografii vozu ve formátu JPG, PNG nebo WebP do 5 MB.
+          </span>
+        </Field>
         <Field label="Image URL" icon={<ImageIcon className="h-4 w-4" />}>
           <input
             name="imageUrl"
             className="h-11 rounded-lg border border-brand-line px-3 text-sm outline-none focus:border-brand-blue"
             placeholder="/images/car-superb.jpg"
           />
+          <span className="text-xs leading-5 text-brand-muted">
+            Volitelné ruční URL zůstává jako záloha, pokud fotografii nenahráváte.
+          </span>
         </Field>
       </div>
 

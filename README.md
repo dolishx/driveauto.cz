@@ -43,6 +43,7 @@ npm run build
 - Forms are wired to submission helpers and write to Supabase only when the public Supabase env vars are configured.
 - Admin access is protected by a simple MVP password gate. This is not full user authentication.
 - Admin vehicle mutations require `SUPABASE_SERVICE_ROLE_KEY` and run only through server-side actions after the admin cookie check.
+- Vehicle photo uploads use Supabase Storage through server-side admin actions. Manual Image URL remains available as a fallback.
 - No email sending or notification workflow is implemented yet.
 - Contact details, address, statutory company identifiers, and opening hours are intentionally not shown until real values are provided.
 - Financing is presented only as a future service.
@@ -83,6 +84,7 @@ Database files:
 
 - Migration: `supabase/migrations/001_initial_schema.sql`
 - Admin inventory migration: `supabase/migrations/002_admin_inventory_policies.sql`
+- Vehicle image storage migration: `supabase/migrations/003_vehicle_image_storage.sql`
 - Seed data: `supabase/seed.sql`
 
 To apply the schema without the Supabase CLI:
@@ -91,7 +93,24 @@ To apply the schema without the Supabase CLI:
 2. Go to SQL Editor.
 3. Run the contents of `supabase/migrations/001_initial_schema.sql`.
 4. Run the contents of `supabase/migrations/002_admin_inventory_policies.sql`.
-5. Run the contents of `supabase/seed.sql`.
+5. Run the contents of `supabase/migrations/003_vehicle_image_storage.sql`.
+6. Run the contents of `supabase/seed.sql`.
+
+The storage migration creates a public Supabase Storage bucket named `vehicle-images`
+with a 5 MB limit and JPG, PNG, and WebP allowed MIME types. It adds public read
+access for stored vehicle photos and intentionally does not add browser upload
+policies. Uploads are performed server-side through the admin vehicle Server
+Action using `SUPABASE_SERVICE_ROLE_KEY`.
+
+If the SQL migration cannot be applied, create the bucket manually in Supabase:
+
+1. Go to Storage.
+2. Create a bucket named `vehicle-images`.
+3. Set it to public.
+4. Limit uploads to 5 MB.
+5. Allow `image/jpeg`, `image/png`, and `image/webp`.
+6. Add a SELECT policy on `storage.objects` for bucket `vehicle-images` so public
+   vehicle images can be read.
 
 To use the Supabase CLI locally:
 
@@ -105,7 +124,7 @@ If linking requires different account permissions, apply the SQL files through t
 
 The public pages read through `src/lib/data.ts`. That layer tries Supabase first when `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are configured, then falls back to local seed data if Supabase is unavailable.
 
-Admin vehicle mutations use Server Actions in `src/app/admin/vehicle-actions.ts` and the server-only client in `src/lib/supabase/server.ts`. They require `ADMIN_PASSWORD` for access and `SUPABASE_SERVICE_ROLE_KEY` for database writes.
+Admin vehicle mutations and image uploads use Server Actions in `src/app/admin/vehicle-actions.ts` and the server-only client in `src/lib/supabase/server.ts`. They require `ADMIN_PASSWORD` for access and `SUPABASE_SERVICE_ROLE_KEY` for database writes and Storage uploads.
 
 Additional notes live in `src/lib/supabase/README.md`.
 

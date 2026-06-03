@@ -37,6 +37,7 @@ type VehicleRow = {
   status: string | null;
   is_featured: boolean | null;
   image_url: string | null;
+  gallery_urls: string[] | null;
   created_at: string | null;
 };
 
@@ -555,6 +556,7 @@ export function mapVehicleRow(row: VehicleRow): Vehicle {
     price: row.price_czk ?? 0,
     status: normalizeVehicleStatus(row.status),
     image: row.image_url || "/images/car-superb.jpg",
+    gallery: Array.isArray(row.gallery_urls) ? row.gallery_urls : [],
     category: normalizeCategory(row.category),
     featured: Boolean(row.is_featured),
     createdAt: row.created_at ?? "",

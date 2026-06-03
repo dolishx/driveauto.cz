@@ -25,11 +25,17 @@ direct PostgreSQL connection strings.
 
 - Migration: `supabase/migrations/001_initial_schema.sql`
 - Admin inventory migration: `supabase/migrations/002_admin_inventory_policies.sql`
+- Vehicle image storage migration: `supabase/migrations/003_vehicle_image_storage.sql`
 - Seed data: `supabase/seed.sql`
 
 Apply the migration first, then the seed data in the Supabase SQL Editor or via
 the Supabase CLI once the local account has access to project
 `ptpouetttwyqksnksboc`.
+
+The storage migration creates the public `vehicle-images` bucket for uploaded
+vehicle photos. Public reads are allowed, but browser uploads are not. Admin
+uploads run through `src/app/admin/vehicle-actions.ts` after the admin session is
+verified and require the server-only `SUPABASE_SERVICE_ROLE_KEY`.
 
 ## Stable data API
 
