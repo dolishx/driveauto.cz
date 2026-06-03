@@ -1,9 +1,19 @@
 import Link from "next/link";
 
-export function Logo() {
+import { cn } from "@/lib/cn";
+
+export function Logo({
+  className,
+  markClassName,
+  textClassName,
+}: {
+  className?: string;
+  markClassName?: string;
+  textClassName?: string;
+} = {}) {
   return (
-    <Link href="/" className="flex items-center gap-3" aria-label="DriveAuto domů">
-      <span className="flex h-9 w-12 items-center justify-center text-brand-blue">
+    <Link href="/" className={cn("flex items-center gap-3", className)} aria-label="DriveAuto domů">
+      <span className={cn("flex h-9 w-12 items-center justify-center text-brand-blue", markClassName)}>
         <svg viewBox="0 0 58 36" className="h-8 w-12" aria-hidden="true">
           <path
             d="M3.5 32 18.8 4h7.7L11.2 32H3.5Z"
@@ -19,7 +29,7 @@ export function Logo() {
           />
         </svg>
       </span>
-      <span className="text-2xl font-bold tracking-[-0.03em] text-brand-navy">
+      <span className={cn("text-2xl font-bold tracking-[-0.03em] text-brand-navy", textClassName)}>
         DriveAuto
       </span>
     </Link>

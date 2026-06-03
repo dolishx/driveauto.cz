@@ -11,10 +11,13 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
+import { logoutAdmin } from "@/app/admin/actions";
+import { AdminLoginScreen } from "@/components/admin/admin-login-screen";
 import { AddVehicleForm } from "@/components/admin/add-vehicle-form";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { LeadManagement } from "@/components/admin/lead-management";
-import { ButtonLink } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
+import { hasAdminSession } from "@/lib/admin-auth";
 import { getAdminVehicles, getAppointmentRequests, getInquiries } from "@/lib/data";
 import { formatMileage, formatPrice } from "@/lib/format";
 import type { Vehicle } from "@/types";
@@ -53,6 +56,12 @@ const managementCards = [
 ];
 
 export default async function AdminPage() {
+  const isAdminUnlocked = await hasAdminSession();
+
+  if (!isAdminUnlocked) {
+    return <AdminLoginScreen />;
+  }
+
   const [vehicles, inquiries, appointmentRequests] = await Promise.all([
     getAdminVehicles(),
     getInquiries(),
@@ -87,18 +96,25 @@ export default async function AdminPage() {
                   Jednoduchý MVP přehled pro přípravu skladových vozů, poptávek a budoucí správy kategorií.
                 </p>
               </div>
-              <ButtonLink href="/nabidka-vozu" variant="secondary" className="h-11">
-                Zobrazit veřejnou nabídku
-              </ButtonLink>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <ButtonLink href="/nabidka-vozu" variant="secondary" className="h-11">
+                  Zobrazit veřejnou nabídku
+                </ButtonLink>
+                <form action={logoutAdmin}>
+                  <Button type="submit" variant="ghost" className="h-11 w-full border border-brand-line bg-white sm:w-auto">
+                    Odejít z administrace
+                  </Button>
+                </form>
+              </div>
             </header>
 
             <section className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900 shadow-sm">
               <div className="flex gap-3">
                 <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
                 <div>
-                  <strong>MVP administrace</strong> — přístup a ukládání budou zabezpečeny v další fázi.
+                  <strong>MVP administrace</strong> — přístup je chráněný jednoduchým heslem pro tuto fázi.
                   <span className="mt-1 block">
-                    Data mohou pocházet ze Supabase nebo z lokálního fallbacku, pokud tabulky vrací prázdný výsledek.
+                    Role, audit přístupů a server-side zápisy budou doplněny v další fázi. Data mohou pocházet ze Supabase nebo z lokálního fallbacku.
                   </span>
                 </div>
               </div>
@@ -227,7 +243,7 @@ export default async function AdminPage() {
 
             <footer className="mt-8 flex flex-col gap-2 text-sm text-brand-muted sm:flex-row sm:items-center sm:justify-between">
               <p>DriveAuto Admin Panel</p>
-              <p>MVP režim bez autentizace. Verze 1.1.0</p>
+              <p>MVP režim chráněný heslem. Verze 1.2.0</p>
             </footer>
           </div>
         </main>

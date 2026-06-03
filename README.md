@@ -35,13 +35,13 @@ npm run build
 - `/sluzby` - dealership services; financing is marked as `Připravujeme`
 - `/kontakt` - contact page with safe placeholders until final company details are confirmed
 - `/domluvit-prohlidku` - appointment request form prepared for future backend wiring
-- `/admin` - MVP admin overview using local sample data only
+- `/admin` - password-protected MVP admin overview for vehicles and inquiries
 
 ## Current MVP Limitations
 
 - Vehicle, service, and inquiry data falls back to local seed data when Supabase env vars are missing.
 - Forms are wired to submission helpers and write to Supabase only when the public Supabase env vars are configured.
-- No authentication or admin permissions are implemented yet.
+- Admin access is protected by a simple MVP password gate. This is not full user authentication.
 - No email sending or notification workflow is implemented yet.
 - Contact details, address, statutory company identifiers, and opening hours are intentionally not shown until real values are provided.
 - Financing is presented only as a future service.
@@ -53,6 +53,7 @@ Copy `.env.example` to `.env.local` when real values are available.
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+ADMIN_PASSWORD=
 ```
 
 For local development, put real values only in `.env.local`.
@@ -63,6 +64,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<paste publishable anon key locally>
 ```
 
 Do not commit `.env.local`, service role keys, database passwords, or direct PostgreSQL connection strings.
+
+`ADMIN_PASSWORD` is used only on the server to unlock `/admin`. Keep it in `.env.local` for local development and in Vercel Environment Variables for production. Do not prefix it with `NEXT_PUBLIC_`.
 
 ## Supabase Setup
 
@@ -104,7 +107,7 @@ The project can be imported into Vercel as a standard Next.js app.
 - Build command: `npm run build`
 - Install command: `npm install`
 - Framework preset: Next.js
-- Environment variables: add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in Vercel only after the database schema is applied
+- Environment variables: add `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `ADMIN_PASSWORD` in Vercel
 - No `vercel.json` is required for the current MVP
 
 Before deployment, run:

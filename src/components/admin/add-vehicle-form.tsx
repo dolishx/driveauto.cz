@@ -130,7 +130,7 @@ export function AddVehicleForm() {
           <Save className="h-4 w-4" />
           {isSubmitting ? "Ukládám..." : "Uložit vůz"}
         </Button>
-        <p className="text-sm text-brand-muted">Autentizace administrace bude doplněna v další fázi.</p>
+        <p className="text-sm text-brand-muted">Plná správa přístupů bude doplněna v další fázi.</p>
       </div>
 
       {message ? (
