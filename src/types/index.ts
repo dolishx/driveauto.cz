@@ -1,4 +1,4 @@
-export type VehicleStatus = "Dostupné" | "Rezervováno" | "Prodáno";
+export type VehicleStatus = "Dostupné" | "Rezervováno" | "Prodáno" | "Koncept" | "Publikováno" | "Archivováno";
 
 export type VehicleCategory = "Osobní vozy" | "SUV / 4x4" | "Dodávky";
 
@@ -22,9 +22,10 @@ export type Vehicle = {
   category: VehicleCategory;
   featured: boolean;
   createdAt: string;
+  adminStatus?: SupabaseVehicleStatus;
 };
 
-export type SupabaseVehicleStatus = "available" | "reserved" | "sold" | "draft" | "published";
+export type SupabaseVehicleStatus = "available" | "reserved" | "sold" | "draft" | "published" | "archived";
 
 export type Service = {
   id: string;
@@ -113,4 +114,7 @@ export type SubmissionResult = {
   ok: boolean;
   configured: boolean;
   error?: string;
+  message?: string;
+  vehicleId?: string;
+  vehicleSlug?: string;
 };

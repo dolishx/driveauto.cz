@@ -3,6 +3,7 @@ import { inquiries } from "@/data/inquiries";
 import { services } from "@/data/services";
 import { vehicles } from "@/data/vehicles";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { slugify } from "@/lib/slug";
 import type {
   AppointmentRequest,
   CreateAppointmentRequestInput,
@@ -13,6 +14,7 @@ import type {
   LeadStatus,
   Service,
   SubmissionResult,
+  SupabaseVehicleStatus,
   TransmissionType,
   UpdateLeadStatusInput,
   Vehicle,
@@ -22,6 +24,7 @@ import type {
 
 type VehicleRow = {
   id: string;
+  slug: string | null;
   brand: string;
   model: string;
   title: string;
@@ -181,6 +184,39 @@ export async function getVehicleById(id: string): Promise<Vehicle | null> {
 }
 
 export async function getVehicleBySlug(slug: string): Promise<Vehicle | null> {
+  const localVehicle = vehicles.find((vehicle) => vehicle.slug === slug) ?? null;
+
+  if (localVehicle) {
+    return localVehicle;
+  }
+
+  const supabase = getSupabaseClient();
+
+  if (!supabase) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("vehicles")
+      .select("*")
+      .eq("slug", slug)
+      .in("status", publicVehicleStatuses)
+      .maybeSingle();
+
+    if (error) {
+      warnSupabaseFallback("vehicle detail", error.message);
+      const currentVehicles = await getVehicles();
+      return currentVehicles.find((vehicle) => vehicle.slug === slug) ?? null;
+    }
+
+    if (data) {
+      return mapVehicleRow(data);
+    }
+  } catch (error) {
+    warnSupabaseFallback("vehicle detail", getErrorMessage(error));
+  }
+
   const currentVehicles = await getVehicles();
   return currentVehicles.find((vehicle) => vehicle.slug === slug) ?? null;
 }
@@ -505,10 +541,10 @@ function mapAppointmentRequestRow(row: AppointmentRequestRow): AppointmentReques
   };
 }
 
-function mapVehicleRow(row: VehicleRow): Vehicle {
+export function mapVehicleRow(row: VehicleRow): Vehicle {
   return {
     id: row.id,
-    slug: slugify(`${row.brand}-${row.model}-${row.id.slice(0, 8)}`),
+    slug: row.slug || slugify(`${row.brand}-${row.model}-${row.title}-${row.year ?? ""}-${row.id.slice(0, 8)}`),
     brand: row.brand,
     model: row.model,
     variant: row.title,
@@ -522,6 +558,7 @@ function mapVehicleRow(row: VehicleRow): Vehicle {
     category: normalizeCategory(row.category),
     featured: Boolean(row.is_featured),
     createdAt: row.created_at ?? "",
+    adminStatus: normalizeSupabaseVehicleStatus(row.status),
   };
 }
 
@@ -539,7 +576,24 @@ function mapServiceRow(row: ServiceRow): Service {
 function normalizeVehicleStatus(status: string | null): VehicleStatus {
   if (status === "reserved") return "Rezervováno";
   if (status === "sold") return "Prodáno";
+  if (status === "draft") return "Koncept";
+  if (status === "published") return "Publikováno";
+  if (status === "archived") return "Archivováno";
   return "Dostupné";
+}
+
+function normalizeSupabaseVehicleStatus(status: string | null): SupabaseVehicleStatus {
+  if (
+    status === "reserved" ||
+    status === "sold" ||
+    status === "draft" ||
+    status === "published" ||
+    status === "archived"
+  ) {
+    return status;
+  }
+
+  return "available";
 }
 
 function normalizeAdminStatus(status?: string) {
@@ -570,15 +624,6 @@ function normalizeTransmission(transmission: string | null): TransmissionType {
 function normalizeCategory(category: string | null): VehicleCategory {
   if (category === "Osobní vozy" || category === "Dodávky") return category;
   return "SUV / 4x4";
-}
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
 }
 
 function isUuid(value?: string) {

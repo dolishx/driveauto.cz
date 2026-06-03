@@ -12,15 +12,19 @@ Use placeholders in `.env.example` only:
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+ADMIN_PASSWORD=
+SUPABASE_SERVICE_ROLE_KEY=
 ```
 
 Use `.env.local` for local values and Vercel Environment Variables for
-production. Do not commit service role keys, database passwords, or direct
-PostgreSQL connection strings.
+production. `SUPABASE_SERVICE_ROLE_KEY` is server-only and must never use a
+`NEXT_PUBLIC_` prefix. Do not commit service role keys, database passwords, or
+direct PostgreSQL connection strings.
 
 ## Database files
 
 - Migration: `supabase/migrations/001_initial_schema.sql`
+- Admin inventory migration: `supabase/migrations/002_admin_inventory_policies.sql`
 - Seed data: `supabase/seed.sql`
 
 Apply the migration first, then the seed data in the Supabase SQL Editor or via
@@ -37,3 +41,6 @@ Keep these exports stable so page components do not need to change:
 - `getServices()`
 - `createInquiry()`
 - `createAppointmentRequest()`
+
+Admin inventory writes use `src/app/admin/vehicle-actions.ts` and the
+server-only Supabase service client in `src/lib/supabase/server.ts`.

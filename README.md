@@ -42,6 +42,7 @@ npm run build
 - Vehicle, service, and inquiry data falls back to local seed data when Supabase env vars are missing.
 - Forms are wired to submission helpers and write to Supabase only when the public Supabase env vars are configured.
 - Admin access is protected by a simple MVP password gate. This is not full user authentication.
+- Admin vehicle mutations require `SUPABASE_SERVICE_ROLE_KEY` and run only through server-side actions after the admin cookie check.
 - No email sending or notification workflow is implemented yet.
 - Contact details, address, statutory company identifiers, and opening hours are intentionally not shown until real values are provided.
 - Financing is presented only as a future service.
@@ -54,6 +55,7 @@ Copy `.env.example` to `.env.local` when real values are available.
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ADMIN_PASSWORD=
+SUPABASE_SERVICE_ROLE_KEY=
 ```
 
 For local development, put real values only in `.env.local`.
@@ -61,11 +63,14 @@ For local development, put real values only in `.env.local`.
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://ptpouetttwyqksnksboc.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<paste publishable anon key locally>
+SUPABASE_SERVICE_ROLE_KEY=<paste service role key locally>
 ```
 
 Do not commit `.env.local`, service role keys, database passwords, or direct PostgreSQL connection strings.
 
 `ADMIN_PASSWORD` is used only on the server to unlock `/admin`. Keep it in `.env.local` for local development and in Vercel Environment Variables for production. Do not prefix it with `NEXT_PUBLIC_`.
+
+`SUPABASE_SERVICE_ROLE_KEY` is used only by server-side admin inventory actions. Never expose it in browser code and never prefix it with `NEXT_PUBLIC_`.
 
 ## Supabase Setup
 
@@ -77,6 +82,7 @@ Supabase project:
 Database files:
 
 - Migration: `supabase/migrations/001_initial_schema.sql`
+- Admin inventory migration: `supabase/migrations/002_admin_inventory_policies.sql`
 - Seed data: `supabase/seed.sql`
 
 To apply the schema without the Supabase CLI:
@@ -84,7 +90,8 @@ To apply the schema without the Supabase CLI:
 1. Open the Supabase Dashboard.
 2. Go to SQL Editor.
 3. Run the contents of `supabase/migrations/001_initial_schema.sql`.
-4. Run the contents of `supabase/seed.sql`.
+4. Run the contents of `supabase/migrations/002_admin_inventory_policies.sql`.
+5. Run the contents of `supabase/seed.sql`.
 
 To use the Supabase CLI locally:
 
@@ -98,6 +105,8 @@ If linking requires different account permissions, apply the SQL files through t
 
 The public pages read through `src/lib/data.ts`. That layer tries Supabase first when `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are configured, then falls back to local seed data if Supabase is unavailable.
 
+Admin vehicle mutations use Server Actions in `src/app/admin/vehicle-actions.ts` and the server-only client in `src/lib/supabase/server.ts`. They require `ADMIN_PASSWORD` for access and `SUPABASE_SERVICE_ROLE_KEY` for database writes.
+
 Additional notes live in `src/lib/supabase/README.md`.
 
 ## Vercel Deployment Notes
@@ -107,7 +116,7 @@ The project can be imported into Vercel as a standard Next.js app.
 - Build command: `npm run build`
 - Install command: `npm install`
 - Framework preset: Next.js
-- Environment variables: add `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `ADMIN_PASSWORD` in Vercel
+- Environment variables: add `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `ADMIN_PASSWORD`, and `SUPABASE_SERVICE_ROLE_KEY` in Vercel
 - No `vercel.json` is required for the current MVP
 
 Before deployment, run:

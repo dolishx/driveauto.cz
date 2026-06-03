@@ -1,78 +1,53 @@
 "use client";
 
 import { Car, Image as ImageIcon, Save, ShieldAlert } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useActionState, useEffect, useRef, type ReactNode } from "react";
 
+import { createVehicleAction } from "@/app/admin/vehicle-actions";
+import type { VehicleMutationState } from "@/app/admin/vehicle-actions";
 import { Button } from "@/components/ui/button";
-import { createVehicle } from "@/lib/data";
 
-const rlsMessage = "Ukládání vozu vyžaduje admin policy nebo server-side action.";
+const serviceRoleMessage = "Správa vozů vyžaduje serverový Supabase klíč.";
+const initialVehicleMutationState: VehicleMutationState = {
+  ok: false,
+  configured: true,
+};
 
-export function AddVehicleForm() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [messageType, setMessageType] = useState<"success" | "warning" | "error">("warning");
+export function AddVehicleForm({ canManageVehicles }: { canManageVehicles: boolean }) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const [state, formAction, isSubmitting] = useActionState(createVehicleAction, initialVehicleMutationState);
+
+  useEffect(() => {
+    if (state.ok) {
+      formRef.current?.reset();
+    }
+  }, [state.ok]);
 
   return (
     <form
+      ref={formRef}
+      action={formAction}
       className="rounded-2xl border border-brand-line bg-white p-5 shadow-sm sm:p-6"
-      onSubmit={async (event) => {
-        event.preventDefault();
-        setIsSubmitting(true);
-        setMessage(null);
-
-        const form = event.currentTarget;
-        const formData = new FormData(form);
-        const result = await createVehicle({
-          title: String(formData.get("title") || ""),
-          brand: String(formData.get("brand") || ""),
-          model: String(formData.get("model") || ""),
-          year: String(formData.get("year") || ""),
-          mileage: String(formData.get("mileage") || ""),
-          fuel: String(formData.get("fuel") || ""),
-          transmission: String(formData.get("transmission") || ""),
-          priceCzk: String(formData.get("priceCzk") || ""),
-          status: String(formData.get("status") || ""),
-          licensePlate: String(formData.get("licensePlate") || ""),
-          color: String(formData.get("color") || ""),
-          powerKw: String(formData.get("powerKw") || ""),
-          engine: String(formData.get("engine") || ""),
-          description: String(formData.get("description") || ""),
-          imageUrl: String(formData.get("imageUrl") || ""),
-        });
-
-        setIsSubmitting(false);
-
-        if (result.ok) {
-          setMessageType("success");
-          setMessage("Vůz byl uložen do Supabase. Po publikování se může zobrazit ve veřejné nabídce.");
-          form.reset();
-          return;
-        }
-
-        if (!result.configured) {
-          setMessageType("warning");
-          setMessage("Supabase není lokálně nakonfigurovaný. Formulář je připravený, ukládání bude aktivní po doplnění env proměnných.");
-          return;
-        }
-
-        setMessageType(result.error === rlsMessage ? "warning" : "error");
-        setMessage(result.error || "Uložení vozu se nepodařilo.");
-      }}
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">Přidat vůz</p>
           <h2 className="mt-2 text-2xl font-bold tracking-[-0.035em] text-brand-navy">Nový vůz do nabídky</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted">
-            Formulář je připravený pro napojení na Supabase. Bez admin policy nebo server-side action může být uložení blokované RLS.
+            Formulář ukládá vozidlo serverově přes Supabase. Publikované a dostupné vozy se zobrazí ve veřejné nabídce.
           </p>
         </div>
         <span className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-xs font-bold text-brand-blue">
           <ShieldAlert className="h-4 w-4" />
-          MVP režim
+          Server action
         </span>
       </div>
+
+      {!canManageVehicles ? (
+        <p className="mt-5 rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-800">
+          {serviceRoleMessage}
+        </p>
+      ) : null}
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <Input name="title" label="Název vozu" placeholder="Např. 2.0 TDI 147 kW DSG L&K" required />
@@ -92,12 +67,15 @@ export function AddVehicleForm() {
             ["sold", "Prodáno"],
             ["draft", "Koncept"],
             ["published", "Publikováno"],
+            ["archived", "Archivováno"],
           ]}
         />
+        <Select name="category" label="Kategorie" options={["Osobní vozy", "SUV / 4x4", "Dodávky"]} />
         <Input name="licensePlate" label="Štítek SPZ" placeholder="Např. 1AM ZENJA" />
         <Input name="color" label="Barva" placeholder="Např. Černá metalíza" />
         <Input name="powerKw" label="Výkon kW" placeholder="147" type="number" />
         <Input name="engine" label="Motor" placeholder="Např. 2.0 TDI" />
+        <Input name="bodyType" label="Karoserie" placeholder="Např. kombi, SUV" />
         <Field label="Image URL" icon={<ImageIcon className="h-4 w-4" />}>
           <input
             name="imageUrl"
@@ -106,6 +84,11 @@ export function AddVehicleForm() {
           />
         </Field>
       </div>
+
+      <label className="mt-4 flex items-center gap-3 rounded-xl border border-brand-line bg-white px-4 py-3 text-sm font-semibold text-brand-muted">
+        <input name="isFeatured" type="checkbox" className="h-4 w-4 rounded border-brand-line text-brand-blue" />
+        Zobrazit jako doporučený vůz
+      </label>
 
       <label className="mt-4 grid gap-2">
         <span className="text-sm font-bold text-brand-navy">Popis</span>
@@ -120,31 +103,34 @@ export function AddVehicleForm() {
         <div className="flex gap-3">
           <Car className="mt-0.5 h-5 w-5 shrink-0 text-brand-blue" />
           <p>
-            Ukládání je zatím MVP. Veřejná nabídka zobrazuje pouze vozy ve stavech dostupné/publikované/rezervované a dál používá lokální fallback, pokud Supabase vrací prázdná data.
+            Veřejná nabídka zobrazuje pouze vozy ve stavech dostupné, publikované nebo rezervované. Fallback zůstává jako pojistka, pokud Supabase vrátí prázdná data.
           </p>
         </div>
       </div>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting || !canManageVehicles}>
           <Save className="h-4 w-4" />
           {isSubmitting ? "Ukládám..." : "Uložit vůz"}
         </Button>
         <p className="text-sm text-brand-muted">Plná správa přístupů bude doplněna v další fázi.</p>
       </div>
 
-      {message ? (
+      {state.error || state.message ? (
         <p
           aria-live="polite"
           className={
-            messageType === "success"
+            state.ok
               ? "mt-5 rounded-lg bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"
-              : messageType === "warning"
+              : !state.configured || state.error === serviceRoleMessage
                 ? "mt-5 rounded-lg bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800"
                 : "mt-5 rounded-lg bg-red-50 px-4 py-3 text-sm font-semibold text-red-700"
           }
         >
-          {message}
+          {state.message || state.error}
+          {state.vehicleSlug ? (
+            <span className="mt-1 block font-normal">Slug detailu: {state.vehicleSlug}</span>
+          ) : null}
         </p>
       ) : null}
     </form>
