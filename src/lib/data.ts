@@ -46,6 +46,7 @@ type VehicleRow = {
   gallery_urls: string[] | null;
   description: string | null;
   created_at: string | null;
+  updated_at: string | null;
 };
 
 type ServiceRow = {
@@ -93,7 +94,8 @@ type AppointmentRequestRow = {
   vehicle?: RelatedVehicleValue;
 };
 
-const publicVehicleStatuses = ["available", "reserved", "published"];
+const publicVehicleStatuses = ["published"];
+const publicFallbackVehicles = vehicles.filter((vehicle) => vehicle.status === "Publikováno");
 const leadStatuses: LeadStatus[] = ["new", "contacted", "scheduled", "completed", "closed"];
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -101,7 +103,7 @@ export async function getVehicles(): Promise<Vehicle[]> {
   const supabase = getSupabaseClient();
 
   if (!supabase) {
-    return vehicles;
+    return publicFallbackVehicles;
   }
 
   try {
@@ -113,18 +115,18 @@ export async function getVehicles(): Promise<Vehicle[]> {
 
     if (error) {
       warnSupabaseFallback("vehicles", error.message);
-      return vehicles;
+      return publicFallbackVehicles;
     }
 
     if (!data?.length) {
       warnSupabaseFallback("vehicles returned empty result");
-      return vehicles;
+      return publicFallbackVehicles;
     }
 
     return data.map(mapVehicleRow);
   } catch (error) {
     warnSupabaseFallback("vehicles", getErrorMessage(error));
-    return vehicles;
+    return publicFallbackVehicles;
   }
 }
 
@@ -132,7 +134,7 @@ export async function getFeaturedVehicles(): Promise<Vehicle[]> {
   const supabase = getSupabaseClient();
 
   if (!supabase) {
-    return vehicles.filter((vehicle) => vehicle.featured);
+    return publicFallbackVehicles.filter((vehicle) => vehicle.featured);
   }
 
   try {
@@ -145,18 +147,18 @@ export async function getFeaturedVehicles(): Promise<Vehicle[]> {
 
     if (error) {
       warnSupabaseFallback("featured vehicles", error.message);
-      return vehicles.filter((vehicle) => vehicle.featured);
+      return publicFallbackVehicles.filter((vehicle) => vehicle.featured);
     }
 
     if (!data?.length) {
       warnSupabaseFallback("vehicles returned empty result");
-      return vehicles.filter((vehicle) => vehicle.featured);
+      return publicFallbackVehicles.filter((vehicle) => vehicle.featured);
     }
 
     return data.map(mapVehicleRow);
   } catch (error) {
     warnSupabaseFallback("featured vehicles", getErrorMessage(error));
-    return vehicles.filter((vehicle) => vehicle.featured);
+    return publicFallbackVehicles.filter((vehicle) => vehicle.featured);
   }
 }
 
@@ -192,7 +194,7 @@ export async function getVehicleById(id: string): Promise<Vehicle | null> {
 }
 
 export async function getVehicleBySlug(slug: string): Promise<Vehicle | null> {
-  const localVehicle = vehicles.find((vehicle) => vehicle.slug === slug) ?? null;
+  const localVehicle = publicFallbackVehicles.find((vehicle) => vehicle.slug === slug) ?? null;
 
   if (localVehicle) {
     return localVehicle;
@@ -577,6 +579,7 @@ export function mapVehicleRow(row: VehicleRow): Vehicle {
     description: row.description ?? undefined,
     featured: Boolean(row.is_featured),
     createdAt: row.created_at ?? "",
+    updatedAt: row.updated_at ?? undefined,
     adminStatus: normalizeSupabaseVehicleStatus(row.status),
   };
 }

@@ -79,12 +79,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     getAppointmentRequests(),
   ]);
   const editingVehicle = vehicles.find((vehicle) => vehicle.id === selectedVehicleId && vehicle.adminStatus) ?? null;
-  const activeVehicles = vehicles.filter(
-    (vehicle) =>
-      vehicle.status === "Dostupné" ||
-      vehicle.status === "Rezervováno" ||
-      vehicle.status === "Publikováno",
-  );
+  const activeVehicles = vehicles.filter((vehicle) => vehicle.status === "Publikováno");
   const soldVehicles = vehicles.filter((vehicle) => vehicle.status === "Prodáno");
   const canManageVehicles = hasSupabaseServiceRoleConfig();
   const newLeadCount =
@@ -93,7 +88,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   const stats = [
     { label: "Celkem vozů", value: vehicles.length, helper: "Vozidla načtená pro administraci", icon: Car },
-    { label: "Aktivní vozy", value: activeVehicles.length, helper: "Dostupné a rezervované vozy", icon: CheckCircle2 },
+    { label: "Aktivní vozy", value: activeVehicles.length, helper: "Publikované vozy ve veřejné nabídce", icon: CheckCircle2 },
     { label: "Prodané vozy", value: soldVehicles.length, helper: "Vozy označené jako prodané", icon: Tag },
     { label: "Nové poptávky", value: newLeadCount, helper: "Nové kontakty a žádosti o prohlídku", icon: MessageSquare },
   ];

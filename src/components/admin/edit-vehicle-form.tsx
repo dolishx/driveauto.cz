@@ -180,11 +180,9 @@ export function EditVehicleForm({
           label="Stav"
           defaultValue={vehicle.adminStatus ?? statusToSupabaseStatus(vehicle.status)}
           options={[
-            ["available", "Dostupné"],
-            ["reserved", "Rezervováno"],
-            ["sold", "Prodáno"],
             ["draft", "Koncept"],
             ["published", "Publikováno"],
+            ["sold", "Prodáno"],
             ["archived", "Archivováno"],
           ]}
         />

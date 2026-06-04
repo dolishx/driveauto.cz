@@ -30,6 +30,7 @@ export type Vehicle = {
   description?: string;
   featured: boolean;
   createdAt: string;
+  updatedAt?: string;
   adminStatus?: SupabaseVehicleStatus;
 };
 

@@ -35,7 +35,7 @@ insert into public.vehicles (
     460,
     '4.4 V8 M TwinPower Turbo',
     '1AM ZENJA',
-    'available',
+    'published',
     false,
     '/images/car-bmw-x6-black.jpg',
     'Prémiové sportovní SUV v černé metalíze připravené pro osobní prohlídku.'
@@ -56,7 +56,7 @@ insert into public.vehicles (
     375,
     '3.0 R6 M TwinPower Turbo',
     '1AM RYSKA',
-    'available',
+    'published',
     false,
     '/images/car-bmw-x4-white.jpg',
     'Výrazné sportovní SUV kupé v bílé perleti s jasným původem.'
@@ -77,7 +77,7 @@ insert into public.vehicles (
     147,
     '2.0 TDI',
     null,
-    'available',
+    'published',
     true,
     '/images/car-superb.jpg',
     'Prostorný kombi vůz s automatickou převodovkou a prověřenou historií.'
@@ -98,7 +98,7 @@ insert into public.vehicles (
     140,
     '2.0d',
     null,
-    'available',
+    'published',
     true,
     '/images/car-bmw-x3.jpg',
     'Oblíbené prémiové SUV s pohonem všech kol a automatickou převodovkou.'
@@ -119,7 +119,7 @@ insert into public.vehicles (
     110,
     '2.0 TDI',
     null,
-    'available',
+    'published',
     true,
     '/images/car-tiguan.jpg',
     'Praktické SUV s pohonem 4MOTION a úsporným naftovým motorem.'
@@ -140,7 +140,7 @@ insert into public.vehicles (
     110,
     '35 TFSI',
     null,
-    'available',
+    'published',
     true,
     '/images/car-audi-a4.jpg',
     'Elegantní sedan s benzinovým motorem a automatickou převodovkou.'
@@ -161,7 +161,7 @@ insert into public.vehicles (
     145,
     'B4 mild-hybrid',
     null,
-    'reserved',
+    'published',
     false,
     '/images/car-volvo-xc60.jpg',
     'Bezpečné prémiové SUV s úsporným mild-hybridním pohonem.'

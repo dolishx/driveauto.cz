@@ -162,11 +162,9 @@ export function AddVehicleForm({ canManageVehicles }: { canManageVehicles: boole
           name="status"
           label="Stav"
           options={[
-            ["available", "Dostupné"],
-            ["reserved", "Rezervováno"],
-            ["sold", "Prodáno"],
             ["draft", "Koncept"],
             ["published", "Publikováno"],
+            ["sold", "Prodáno"],
             ["archived", "Archivováno"],
           ]}
         />
