@@ -62,7 +62,7 @@ export const inquiries: Inquiry[] = [
     vehicleId: "veh-005",
     vehicleName: "Volvo XC60 B4 AWD",
     message: "Poptávka byla zpracována v rámci MVP přehledu.",
-    status: "completed",
+    status: "closed",
     sourcePage: "/kontakt",
     createdAt: "Lokální fallback",
   },

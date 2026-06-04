@@ -1,376 +1,436 @@
 "use client";
 
-import { CalendarClock, Clock, Mail, MessageSquare, Phone, User, X } from "lucide-react";
+import {
+  CalendarClock,
+  Car,
+  CheckCircle2,
+  Clock,
+  ExternalLink,
+  Mail,
+  MessageSquare,
+  Phone,
+  StickyNote,
+  User,
+  X,
+} from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
 
+import { addLeadNoteAction, updateCrmLeadStatusAction } from "@/app/admin/lead-actions";
 import { Button } from "@/components/ui/button";
-import { updateInquiryStatus } from "@/lib/data";
-import type { AppointmentRequest, Inquiry, LeadStatus } from "@/types";
+import type { CrmLead, LeadNote, LeadStatus, LeadStatusHistoryEntry } from "@/types";
 
 const statusLabels: Record<LeadStatus, string> = {
-  new: "Nová",
-  contacted: "Kontaktováno",
-  scheduled: "Naplánováno",
-  completed: "Dokončeno",
+  new: "Nový",
+  contacted: "Kontaktován",
+  scheduled: "Schůzka domluvena",
+  offer_sent: "Nabídka odeslána",
+  waiting_decision: "Čeká na rozhodnutí",
   closed: "Uzavřeno",
+  rejected: "Zamítnuto",
 };
 
-const statusOptions: LeadStatus[] = ["new", "contacted", "scheduled", "completed", "closed"];
+const statusOptions: LeadStatus[] = [
+  "new",
+  "contacted",
+  "scheduled",
+  "offer_sent",
+  "waiting_decision",
+  "closed",
+  "rejected",
+];
 
-type SelectedLead =
-  | { kind: "inquiry"; item: Inquiry }
-  | { kind: "appointment"; item: AppointmentRequest };
+const pipelineFilters: Array<{ id: LeadStatus | "all"; label: string }> = [
+  { id: "all", label: "Vše" },
+  ...statusOptions.map((status) => ({ id: status, label: statusLabels[status] })),
+];
 
-export function LeadManagement({
-  inquiries,
-  appointmentRequests,
-}: {
-  inquiries: Inquiry[];
-  appointmentRequests: AppointmentRequest[];
-}) {
-  const [localInquiries, setLocalInquiries] = useState(inquiries);
-  const [localAppointments, setLocalAppointments] = useState(appointmentRequests);
-  const [selected, setSelected] = useState<SelectedLead | null>(() => {
-    if (inquiries[0]) return { kind: "inquiry", item: inquiries[0] };
-    if (appointmentRequests[0]) return { kind: "appointment", item: appointmentRequests[0] };
-    return null;
-  });
+export function LeadManagement({ leads }: { leads: CrmLead[] }) {
+  const [localLeads, setLocalLeads] = useState(leads);
+  const [selected, setSelected] = useState<CrmLead | null>(leads[0] ?? null);
+  const [activeStatus, setActiveStatus] = useState<LeadStatus | "all">("all");
   const [notice, setNotice] = useState<string | null>(null);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
+  const [noteText, setNoteText] = useState("");
 
-  const leadCounts = useMemo(
-    () => ({
-      inquiries: localInquiries.length,
-      appointments: localAppointments.length,
-      newItems:
-        localInquiries.filter((item) => item.status === "new").length +
-        localAppointments.filter((item) => item.status === "new").length,
-    }),
-    [localAppointments, localInquiries],
+  const stats = useMemo(() => getLeadStats(localLeads), [localLeads]);
+  const filteredLeads = useMemo(
+    () => localLeads.filter((lead) => activeStatus === "all" || lead.status === activeStatus),
+    [activeStatus, localLeads],
   );
+  const statusCounts = useMemo(() => getStatusCounts(localLeads), [localLeads]);
 
-  async function handleStatusChange(kind: SelectedLead["kind"], id: string, status: LeadStatus) {
-    const key = `${kind}-${id}`;
+  async function handleStatusChange(lead: CrmLead, status: LeadStatus) {
+    if (lead.status === status) return;
+
+    const key = `status-${lead.id}`;
     setPendingKey(key);
     setNotice(null);
 
-    if (kind === "inquiry") {
-      setLocalInquiries((items) => updateStatus(items, id, status));
-      setSelected((current) =>
-        current?.kind === "inquiry" && current.item.id === id
-          ? { kind, item: { ...current.item, status } }
-          : current,
-      );
-    } else {
-      setLocalAppointments((items) => updateStatus(items, id, status));
-      setSelected((current) =>
-        current?.kind === "appointment" && current.item.id === id
-          ? { kind, item: { ...current.item, status } }
-          : current,
-      );
-    }
-
-    const result = await updateInquiryStatus({
-      id,
+    const result = await updateCrmLeadStatusAction({
+      leadType: lead.sourceType,
+      leadId: lead.sourceId,
       status,
-      entity: kind === "appointment" ? "appointment" : "inquiry",
     });
 
     setPendingKey(null);
 
     if (!result.ok) {
-      setNotice(result.error || "Změna statusu je zatím pouze v UI.");
+      setNotice(result.error || "Změna statusu se nepodařila.");
       return;
     }
 
-    setNotice("Status byl uložen do Supabase.");
+    const historyEntry: LeadStatusHistoryEntry = {
+      id: `${lead.id}-${lead.status}-${status}-local`,
+      fromStatus: lead.status,
+      toStatus: status,
+      note: "Změna statusu v administraci DriveAuto.",
+      createdAt: "Právě teď",
+    };
+
+    updateLead(lead.id, (item) => ({
+      ...item,
+      status,
+      updatedAt: "Právě teď",
+      statusHistory: [historyEntry, ...item.statusHistory],
+    }));
+    setNotice(result.message || "Status leadu byl uložen.");
+  }
+
+  async function handleAddNote(lead: CrmLead) {
+    const normalizedNote = noteText.trim();
+
+    if (!normalizedNote) {
+      setNotice("Poznámka musí obsahovat text.");
+      return;
+    }
+
+    const key = `note-${lead.id}`;
+    setPendingKey(key);
+    setNotice(null);
+
+    const result = await addLeadNoteAction({
+      leadType: lead.sourceType,
+      leadId: lead.sourceId,
+      note: normalizedNote,
+    });
+
+    setPendingKey(null);
+
+    if (!result.ok || !result.leadNote) {
+      setNotice(result.error || "Uložení poznámky se nepodařilo.");
+      return;
+    }
+
+    updateLead(lead.id, (item) => ({
+      ...item,
+      notes: [result.leadNote as LeadNote, ...item.notes],
+      updatedAt: "Právě teď",
+    }));
+    setNoteText("");
+    setNotice(result.message || "Poznámka byla uložena.");
+  }
+
+  function updateLead(leadId: string, updater: (lead: CrmLead) => CrmLead) {
+    setLocalLeads((items) => items.map((item) => (item.id === leadId ? updater(item) : item)));
+    setSelected((current) => (current?.id === leadId ? updater(current) : current));
   }
 
   return (
     <section id="poptavky" className="mt-7 rounded-2xl border border-brand-line bg-white p-5 shadow-sm sm:p-6">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="min-w-0">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">Poptávky</p>
-              <h2 className="mt-2 text-2xl font-bold tracking-[-0.035em] text-brand-navy">
-                Lead management
-              </h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-muted">
-                Jednoduchý přehled kontaktních poptávek a žádostí o prohlídku. Změny statusu jsou připravené pro Supabase, ale mohou být blokované RLS.
-              </p>
-            </div>
-            <div className="grid grid-cols-3 gap-2 text-center text-xs font-semibold text-brand-muted">
-              <Metric value={leadCounts.inquiries} label="Poptávky" />
-              <Metric value={leadCounts.appointments} label="Prohlídky" />
-              <Metric value={leadCounts.newItems} label="Nové" />
-            </div>
-          </div>
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">CRM leady</p>
+          <h2 className="mt-2 text-2xl font-bold tracking-[-0.035em] text-brand-navy">
+            Obchodní pipeline DriveAuto
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-muted">
+            Sjednocený přehled kontaktních poptávek, dotazů k vozům a žádostí o prohlídku.
+            Interní poznámky a historie statusů jsou viditelné pouze v administraci.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-center text-xs font-semibold text-brand-muted md:grid-cols-4">
+          <Metric value={stats.newLeads} label="Nové" />
+          <Metric value={stats.openLeads} label="Otevřené" />
+          <Metric value={stats.closedLeads} label="Uzavřené" />
+          <Metric value={`${stats.conversionRate}%`} label="Konverze" />
+        </div>
+      </div>
 
-          {notice ? (
-            <p
-              aria-live="polite"
-              className={
-                notice.includes("uložen")
-                  ? "mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"
-                  : "mt-5 rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800"
-              }
+      {notice ? (
+        <p
+          aria-live="polite"
+          className={
+            notice.includes("uložen") || notice.includes("uložena")
+              ? "mt-5 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"
+              : "mt-5 rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800"
+          }
+        >
+          {notice}
+        </p>
+      ) : null}
+
+      <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
+        {pipelineFilters.map((filter) => {
+          const count = filter.id === "all" ? localLeads.length : statusCounts[filter.id];
+          const isActive = activeStatus === filter.id;
+
+          return (
+            <button
+              key={filter.id}
+              type="button"
+              onClick={() => setActiveStatus(filter.id)}
+              className={`shrink-0 rounded-full border px-4 py-2 text-sm font-bold transition ${
+                isActive
+                  ? "border-brand-blue bg-brand-blue text-white"
+                  : "border-brand-line bg-white text-brand-navy hover:border-brand-blue/35 hover:bg-brand-soft"
+              }`}
             >
-              {notice}
+              {filter.label}
+              <span className={isActive ? "ml-2 text-white/80" : "ml-2 text-brand-muted"}>{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="grid min-w-0 gap-3">
+          {filteredLeads.length ? (
+            filteredLeads.map((lead) => (
+              <LeadCard
+                key={lead.id}
+                lead={lead}
+                isActive={selected?.id === lead.id}
+                isPending={pendingKey === `status-${lead.id}`}
+                onOpen={() => setSelected(lead)}
+                onStatusChange={(status) => handleStatusChange(lead, status)}
+              />
+            ))
+          ) : (
+            <p className="rounded-2xl border border-dashed border-brand-line bg-brand-soft/45 px-4 py-8 text-center text-sm text-brand-muted">
+              Pro vybraný status zatím nejsou žádné leady.
             </p>
-          ) : null}
-
-          <div className="mt-6 grid gap-6 xl:grid-cols-2">
-            <LeadList
-              title="Kontaktní poptávky"
-              description="Dotazy z kontaktního formuláře a poptávky k vozům."
-              emptyText="Zatím nejsou k dispozici žádné kontaktní poptávky."
-            >
-              {localInquiries.map((item) => (
-                <InquiryCard
-                  key={item.id}
-                  inquiry={item}
-                  isPending={pendingKey === `inquiry-${item.id}`}
-                  onOpen={() => setSelected({ kind: "inquiry", item })}
-                  onStatusChange={(status) => handleStatusChange("inquiry", item.id, status)}
-                />
-              ))}
-            </LeadList>
-
-            <LeadList
-              title="Žádosti o prohlídku"
-              description="Termíny vybrané přes formulář pro osobní prohlídku."
-              emptyText="Zatím nejsou k dispozici žádné žádosti o prohlídku."
-            >
-              {localAppointments.map((item) => (
-                <AppointmentCard
-                  key={item.id}
-                  appointment={item}
-                  isPending={pendingKey === `appointment-${item.id}`}
-                  onOpen={() => setSelected({ kind: "appointment", item })}
-                  onStatusChange={(status) => handleStatusChange("appointment", item.id, status)}
-                />
-              ))}
-            </LeadList>
-          </div>
+          )}
         </div>
 
-        <LeadDetailPanel selected={selected} onClose={() => setSelected(null)} />
+        <LeadDetailPanel
+          selected={selected}
+          noteText={noteText}
+          isNotePending={selected ? pendingKey === `note-${selected.id}` : false}
+          onClose={() => setSelected(null)}
+          onNoteChange={setNoteText}
+          onAddNote={() => selected && handleAddNote(selected)}
+        />
       </div>
     </section>
   );
 }
 
-function LeadList({
-  title,
-  description,
-  emptyText,
-  children,
-}: {
-  title: string;
-  description: string;
-  emptyText: string;
-  children: ReactNode;
-}) {
-  const isEmpty = Array.isArray(children) && children.length === 0;
-
-  return (
-    <section className="min-w-0 rounded-2xl border border-brand-line bg-brand-soft/45 p-4">
-      <h3 className="text-lg font-bold text-brand-navy">{title}</h3>
-      <p className="mt-1 text-sm leading-6 text-brand-muted">{description}</p>
-      <div className="mt-4 grid gap-3">
-        {isEmpty ? (
-          <p className="rounded-xl border border-brand-line bg-white px-4 py-5 text-sm text-brand-muted">
-            {emptyText}
-          </p>
-        ) : (
-          children
-        )}
-      </div>
-    </section>
-  );
-}
-
-function InquiryCard({
-  inquiry,
+function LeadCard({
+  lead,
+  isActive,
   isPending,
   onOpen,
   onStatusChange,
 }: {
-  inquiry: Inquiry;
+  lead: CrmLead;
+  isActive: boolean;
   isPending: boolean;
   onOpen: () => void;
   onStatusChange: (status: LeadStatus) => void;
 }) {
   return (
-    <article className="rounded-xl border border-brand-line bg-white p-4 shadow-sm">
-      <LeadCardHeader
-        title={inquiry.name}
-        subtitle={inquiry.vehicleName}
-        status={inquiry.status}
-        createdAt={inquiry.createdAt}
-      />
-      <p className="mt-3 line-clamp-2 text-sm leading-6 text-brand-muted">{inquiry.message}</p>
-      <LeadCardFooter
-        status={inquiry.status}
-        isPending={isPending}
-        onOpen={onOpen}
-        onStatusChange={onStatusChange}
-      />
+    <article
+      className={`rounded-2xl border bg-white p-4 shadow-sm transition ${
+        isActive ? "border-brand-blue/50 ring-4 ring-brand-blue/10" : "border-brand-line hover:border-brand-blue/35"
+      }`}
+    >
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <button type="button" onClick={onOpen} className="min-w-0 text-left">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-bold text-brand-blue">
+              {lead.leadId}
+            </span>
+            <StatusBadge status={lead.status} />
+          </div>
+          <h3 className="mt-3 text-lg font-bold text-brand-navy">{lead.name}</h3>
+          <p className="mt-1 text-sm text-brand-muted">{lead.source}</p>
+        </button>
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <select
+            value={lead.status}
+            onChange={(event) => onStatusChange(event.target.value as LeadStatus)}
+            className="h-10 rounded-lg border border-brand-line bg-white px-3 text-sm font-semibold text-brand-navy outline-none focus:border-brand-blue"
+            disabled={isPending}
+            aria-label="Změnit status leadu"
+          >
+            {statusOptions.map((option) => (
+              <option key={option} value={option}>
+                {statusLabels[option]}
+              </option>
+            ))}
+          </select>
+          <Button type="button" variant="secondary" className="h-10" onClick={onOpen}>
+            Detail
+          </Button>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-2 text-sm text-brand-muted md:grid-cols-3">
+        <InlineInfo icon={<Phone className="h-4 w-4" />} value={lead.phone} />
+        <InlineInfo icon={<Mail className="h-4 w-4" />} value={lead.email} />
+        <InlineInfo icon={<Car className="h-4 w-4" />} value={lead.vehicleName} />
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-brand-muted">
+        <span>Vytvořeno: {lead.createdAt}</span>
+        <span>Upraveno: {lead.updatedAt}</span>
+        <span>Poznámky: {lead.notes.length}</span>
+      </div>
     </article>
   );
 }
 
-function AppointmentCard({
-  appointment,
-  isPending,
-  onOpen,
-  onStatusChange,
+function LeadDetailPanel({
+  selected,
+  noteText,
+  isNotePending,
+  onClose,
+  onNoteChange,
+  onAddNote,
 }: {
-  appointment: AppointmentRequest;
-  isPending: boolean;
-  onOpen: () => void;
-  onStatusChange: (status: LeadStatus) => void;
+  selected: CrmLead | null;
+  noteText: string;
+  isNotePending: boolean;
+  onClose: () => void;
+  onNoteChange: (value: string) => void;
+  onAddNote: () => void;
 }) {
-  return (
-    <article className="rounded-xl border border-brand-line bg-white p-4 shadow-sm">
-      <LeadCardHeader
-        title={appointment.name}
-        subtitle={appointment.vehicleName}
-        status={appointment.status}
-        createdAt={appointment.createdAt}
-      />
-      <div className="mt-3 grid gap-2 text-sm text-brand-muted sm:grid-cols-2">
-        <p className="flex items-center gap-2">
-          <CalendarClock className="h-4 w-4 text-brand-blue" />
-          {appointment.preferredDate}
-        </p>
-        <p className="flex items-center gap-2">
-          <Clock className="h-4 w-4 text-brand-blue" />
-          {appointment.preferredTime}
-        </p>
-      </div>
-      <LeadCardFooter
-        status={appointment.status}
-        isPending={isPending}
-        onOpen={onOpen}
-        onStatusChange={onStatusChange}
-      />
-    </article>
-  );
-}
-
-function LeadCardHeader({
-  title,
-  subtitle,
-  status,
-  createdAt,
-}: {
-  title: string;
-  subtitle: string;
-  status: LeadStatus;
-  createdAt: string;
-}) {
-  return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-      <div className="min-w-0">
-        <h4 className="truncate font-bold text-brand-navy">{title}</h4>
-        <p className="mt-1 truncate text-sm text-brand-muted">{subtitle}</p>
-        <p className="mt-1 text-xs font-semibold text-brand-muted">{createdAt}</p>
-      </div>
-      <StatusBadge status={status} />
-    </div>
-  );
-}
-
-function LeadCardFooter({
-  status,
-  isPending,
-  onOpen,
-  onStatusChange,
-}: {
-  status: LeadStatus;
-  isPending: boolean;
-  onOpen: () => void;
-  onStatusChange: (status: LeadStatus) => void;
-}) {
-  return (
-    <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <select
-        value={status}
-        onChange={(event) => onStatusChange(event.target.value as LeadStatus)}
-        className="h-10 rounded-lg border border-brand-line bg-white px-3 text-sm font-semibold text-brand-navy outline-none focus:border-brand-blue"
-        disabled={isPending}
-        aria-label="Změnit status"
-      >
-        {statusOptions.map((option) => (
-          <option key={option} value={option}>
-            {statusLabels[option]}
-          </option>
-        ))}
-      </select>
-      <Button type="button" variant="secondary" className="h-10" onClick={onOpen}>
-        Detail
-      </Button>
-    </div>
-  );
-}
-
-function LeadDetailPanel({ selected, onClose }: { selected: SelectedLead | null; onClose: () => void }) {
   if (!selected) {
     return (
-      <aside className="rounded-2xl border border-brand-line bg-brand-soft/50 p-5 text-sm leading-6 text-brand-muted lg:sticky lg:top-24">
-        Vyberte poptávku nebo žádost o prohlídku pro zobrazení detailu.
+      <aside className="rounded-2xl border border-brand-line bg-brand-soft/50 p-5 text-sm leading-6 text-brand-muted xl:sticky xl:top-24">
+        Vyberte lead pro zobrazení detailu, poznámek a historie statusů.
       </aside>
     );
   }
 
-  const isInquiry = selected.kind === "inquiry";
-  const item = selected.item;
-
   return (
-    <aside className="rounded-2xl border border-brand-line bg-white p-5 shadow-sm lg:sticky lg:top-24">
+    <aside className="rounded-2xl border border-brand-line bg-white p-5 shadow-sm xl:sticky xl:top-24">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">
-            {isInquiry ? "Detail poptávky" : "Detail prohlídky"}
-          </p>
-          <h3 className="mt-2 text-xl font-bold tracking-[-0.03em] text-brand-navy">
-            {item.name}
-          </h3>
+          <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">{selected.leadId}</p>
+          <h3 className="mt-2 text-xl font-bold tracking-[-0.03em] text-brand-navy">{selected.name}</h3>
+          <p className="mt-1 text-sm text-brand-muted">{selected.source}</p>
         </div>
         <button
           type="button"
           onClick={onClose}
           className="flex h-9 w-9 items-center justify-center rounded-lg border border-brand-line text-brand-muted hover:bg-brand-soft"
-          aria-label="Zavřít detail"
+          aria-label="Zavřít detail leadu"
         >
           <X className="h-4 w-4" />
         </button>
       </div>
 
       <div className="mt-5 grid gap-3">
-        <DetailLine icon={<User className="h-4 w-4" />} label="Jméno" value={item.name} />
-        <DetailLine icon={<Phone className="h-4 w-4" />} label="Telefon" value={item.phone} />
-        <DetailLine icon={<Mail className="h-4 w-4" />} label="E-mail" value={item.email} />
-        <DetailLine icon={<MessageSquare className="h-4 w-4" />} label="Vůz" value={item.vehicleName} />
-        <DetailLine label="Vytvořeno" value={item.createdAt} />
-        <DetailLine label="Status" value={statusLabels[item.status]} />
-        {isInquiry ? (
-          <>
-            <DetailLine label="Typ" value={(item as Inquiry).type} />
-            <DetailLine label="Zdroj" value={(item as Inquiry).sourcePage} />
-            <DetailText label="Zpráva" value={(item as Inquiry).message} />
-          </>
-        ) : (
-          <>
-            <DetailLine label="Preferované datum" value={(item as AppointmentRequest).preferredDate} />
-            <DetailLine label="Preferovaný čas" value={(item as AppointmentRequest).preferredTime} />
-            <DetailText label="Poznámka" value={(item as AppointmentRequest).note} />
-          </>
-        )}
+        <DetailLine icon={<User className="h-4 w-4" />} label="Jméno" value={selected.name} />
+        <DetailLine icon={<Phone className="h-4 w-4" />} label="Telefon" value={selected.phone} />
+        <DetailLine icon={<Mail className="h-4 w-4" />} label="E-mail" value={selected.email} />
+        <DetailLine label="Status" value={statusLabels[selected.status]} />
+        <DetailVehicle lead={selected} />
+        {selected.appointmentDate || selected.appointmentTime ? (
+          <div className="grid gap-2 sm:grid-cols-2">
+            <DetailLine icon={<CalendarClock className="h-4 w-4" />} label="Datum prohlídky" value={selected.appointmentDate ?? "Neuvedeno"} />
+            <DetailLine icon={<Clock className="h-4 w-4" />} label="Čas prohlídky" value={selected.appointmentTime ?? "Neuvedeno"} />
+          </div>
+        ) : null}
+        <DetailText label={selected.sourceType === "appointment" ? "Poznámka z formuláře" : "Zpráva"} value={selected.appointmentNote ?? selected.message ?? "Bez zprávy"} />
       </div>
+
+      <section className="mt-5 rounded-2xl border border-brand-line bg-brand-soft/45 p-4">
+        <h4 className="flex items-center gap-2 font-bold text-brand-navy">
+          <StickyNote className="h-4 w-4 text-brand-blue" />
+          Interní poznámky
+        </h4>
+        <textarea
+          value={noteText}
+          onChange={(event) => onNoteChange(event.currentTarget.value)}
+          className="mt-3 min-h-24 w-full rounded-lg border border-brand-line bg-white p-3 text-sm outline-none focus:border-brand-blue"
+          placeholder="Např. voláno zákazníkovi, čekáme na rozhodnutí, prohlídka proběhla..."
+        />
+        <Button type="button" className="mt-3 h-10" disabled={isNotePending} onClick={onAddNote}>
+          <MessageSquare className="h-4 w-4" />
+          {isNotePending ? "Ukládám..." : "Přidat poznámku"}
+        </Button>
+
+        <div className="mt-4 grid gap-2">
+          {selected.notes.length ? (
+            selected.notes.map((note) => (
+              <div key={note.id} className="rounded-xl border border-brand-line bg-white px-3 py-3">
+                <p className="text-sm leading-6 text-brand-navy">{note.text}</p>
+                <p className="mt-1 text-xs font-semibold text-brand-muted">{note.createdAt}</p>
+              </div>
+            ))
+          ) : (
+            <p className="rounded-xl border border-dashed border-brand-line bg-white px-3 py-4 text-sm text-brand-muted">
+              Zatím nejsou uložené žádné interní poznámky.
+            </p>
+          )}
+        </div>
+      </section>
+
+      <section className="mt-5 rounded-2xl border border-brand-line bg-white p-4">
+        <h4 className="flex items-center gap-2 font-bold text-brand-navy">
+          <CheckCircle2 className="h-4 w-4 text-brand-blue" />
+          Historie statusů
+        </h4>
+        <div className="mt-4 grid gap-3">
+          {selected.statusHistory.map((entry) => (
+            <div key={entry.id} className="rounded-xl bg-brand-soft/55 px-3 py-3 text-sm">
+              <p className="font-bold text-brand-navy">
+                {entry.fromStatus ? `${statusLabels[entry.fromStatus]} → ` : ""}
+                {statusLabels[entry.toStatus]}
+              </p>
+              {entry.note ? <p className="mt-1 leading-6 text-brand-muted">{entry.note}</p> : null}
+              <p className="mt-1 text-xs font-semibold text-brand-muted">{entry.createdAt}</p>
+            </div>
+          ))}
+        </div>
+      </section>
     </aside>
+  );
+}
+
+function DetailVehicle({ lead }: { lead: CrmLead }) {
+  return (
+    <div className="rounded-xl border border-brand-line bg-white px-3 py-3">
+      <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-brand-muted">
+        <Car className="h-4 w-4 text-brand-blue" />
+        Vůz
+      </p>
+      <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <p className="break-words font-bold text-brand-navy">{lead.vehicleName || "Bez vybraného vozu"}</p>
+        {lead.vehicleSlug ? (
+          <Link
+            href={`/nabidka-vozu/${lead.vehicleSlug}`}
+            className="inline-flex items-center gap-1 text-sm font-bold text-brand-blue hover:text-brand-blue-dark"
+          >
+            Otevřít vůz
+            <ExternalLink className="h-3.5 w-3.5" />
+          </Link>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function InlineInfo({ icon, value }: { icon: ReactNode; value: string }) {
+  return (
+    <span className="flex min-w-0 items-center gap-2">
+      <span className="shrink-0 text-brand-blue">{icon}</span>
+      <span className="truncate">{value || "Neuvedeno"}</span>
+    </span>
   );
 }
 
@@ -398,14 +458,18 @@ function DetailText({ label, value }: { label: string; value: string }) {
 function StatusBadge({ status }: { status: LeadStatus }) {
   const className =
     status === "closed"
-      ? "bg-slate-100 text-slate-700"
-      : status === "completed"
-        ? "bg-emerald-50 text-emerald-700"
-        : status === "scheduled"
-          ? "bg-blue-50 text-brand-blue"
-          : status === "contacted"
-            ? "bg-amber-50 text-amber-800"
-            : "bg-brand-soft text-brand-blue";
+      ? "bg-emerald-50 text-emerald-700"
+      : status === "rejected"
+        ? "bg-rose-50 text-rose-700"
+        : status === "waiting_decision"
+          ? "bg-amber-50 text-amber-800"
+          : status === "offer_sent"
+            ? "bg-blue-50 text-brand-blue"
+            : status === "scheduled"
+              ? "bg-indigo-50 text-indigo-700"
+              : status === "contacted"
+                ? "bg-slate-100 text-slate-700"
+                : "bg-brand-soft text-brand-blue";
 
   return (
     <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${className}`}>
@@ -414,7 +478,7 @@ function StatusBadge({ status }: { status: LeadStatus }) {
   );
 }
 
-function Metric({ value, label }: { value: number; label: string }) {
+function Metric({ value, label }: { value: number | string; label: string }) {
   return (
     <span className="rounded-xl border border-brand-line bg-white px-3 py-2">
       <span className="block text-lg font-bold text-brand-navy">{value}</span>
@@ -423,6 +487,35 @@ function Metric({ value, label }: { value: number; label: string }) {
   );
 }
 
-function updateStatus<T extends { id: string; status: LeadStatus }>(items: T[], id: string, status: LeadStatus) {
-  return items.map((item) => (item.id === id ? { ...item, status } : item));
+function getStatusCounts(leads: CrmLead[]) {
+  return leads.reduce<Record<LeadStatus, number>>(
+    (counts, lead) => {
+      counts[lead.status] += 1;
+      return counts;
+    },
+    {
+      new: 0,
+      contacted: 0,
+      scheduled: 0,
+      offer_sent: 0,
+      waiting_decision: 0,
+      closed: 0,
+      rejected: 0,
+    },
+  );
+}
+
+function getLeadStats(leads: CrmLead[]) {
+  const newLeads = leads.filter((lead) => lead.status === "new").length;
+  const closedLeads = leads.filter((lead) => lead.status === "closed").length;
+  const rejectedLeads = leads.filter((lead) => lead.status === "rejected").length;
+  const openLeads = leads.length - closedLeads - rejectedLeads;
+  const conversionRate = leads.length ? Math.round((closedLeads / leads.length) * 100) : 0;
+
+  return {
+    newLeads,
+    openLeads,
+    closedLeads,
+    conversionRate,
+  };
 }

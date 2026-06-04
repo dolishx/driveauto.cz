@@ -96,7 +96,15 @@ type AppointmentRequestRow = {
 
 const publicVehicleStatuses = ["published"];
 const publicFallbackVehicles = vehicles.filter((vehicle) => vehicle.status === "Publikováno");
-const leadStatuses: LeadStatus[] = ["new", "contacted", "scheduled", "completed", "closed"];
+const leadStatuses: LeadStatus[] = [
+  "new",
+  "contacted",
+  "scheduled",
+  "offer_sent",
+  "waiting_decision",
+  "closed",
+  "rejected",
+];
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function getVehicles(): Promise<Vehicle[]> {
@@ -635,6 +643,10 @@ function normalizeAdminStatus(status?: string) {
 }
 
 function normalizeLeadStatus(status: string | null): LeadStatus {
+  if (status === "completed") {
+    return "closed";
+  }
+
   if (status && leadStatuses.includes(status as LeadStatus)) {
     return status as LeadStatus;
   }

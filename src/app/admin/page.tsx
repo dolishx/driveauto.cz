@@ -18,12 +18,12 @@ import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { LeadManagement } from "@/components/admin/lead-management";
 import { VehicleImage } from "@/components/site/vehicle-image";
 import { Button, ButtonLink } from "@/components/ui/button";
+import { getCrmLeads } from "@/lib/admin-leads";
 import { getAdminVehicles } from "@/lib/admin-data";
 import { hasAdminSession } from "@/lib/admin-auth";
-import { getAppointmentRequests, getInquiries } from "@/lib/data";
 import { formatPrice } from "@/lib/format";
 import { hasSupabaseServiceRoleConfig } from "@/lib/supabase/server";
-import type { Vehicle } from "@/types";
+import type { CrmLead, Vehicle } from "@/types";
 
 const managementCards = [
   {
@@ -73,24 +73,20 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const selectedVehicleId = Array.isArray(query.editVehicle)
     ? query.editVehicle[0]
     : query.editVehicle;
-  const [vehicles, inquiries, appointmentRequests] = await Promise.all([
+  const [vehicles, leads] = await Promise.all([
     getAdminVehicles(),
-    getInquiries(),
-    getAppointmentRequests(),
+    getCrmLeads(),
   ]);
   const editingVehicle = vehicles.find((vehicle) => vehicle.id === selectedVehicleId && vehicle.adminStatus) ?? null;
-  const activeVehicles = vehicles.filter((vehicle) => vehicle.status === "Publikováno");
-  const soldVehicles = vehicles.filter((vehicle) => vehicle.status === "Prodáno");
   const canManageVehicles = hasSupabaseServiceRoleConfig();
-  const newLeadCount =
-    inquiries.filter((inquiry) => inquiry.status === "new").length +
-    appointmentRequests.filter((request) => request.status === "new").length;
+  const leadStats = getLeadOverviewStats(leads);
+  const leadCountsByVehicleId = getLeadCountsByVehicleId(leads);
 
   const stats = [
-    { label: "Celkem vozů", value: vehicles.length, helper: "Vozidla načtená pro administraci", icon: Car },
-    { label: "Aktivní vozy", value: activeVehicles.length, helper: "Publikované vozy ve veřejné nabídce", icon: CheckCircle2 },
-    { label: "Prodané vozy", value: soldVehicles.length, helper: "Vozy označené jako prodané", icon: Tag },
-    { label: "Nové poptávky", value: newLeadCount, helper: "Nové kontakty a žádosti o prohlídku", icon: MessageSquare },
+    { label: "Nové leady", value: leadStats.newLeads, helper: "Nové poptávky čekající na reakci", icon: MessageSquare },
+    { label: "Otevřené leady", value: leadStats.openLeads, helper: "Rozpracované kontakty v pipeline", icon: Car },
+    { label: "Uzavřené leady", value: leadStats.closedLeads, helper: "Úspěšně uzavřené obchodní případy", icon: CheckCircle2 },
+    { label: "Konverze", value: `${leadStats.conversionRate}%`, helper: "Podíl uzavřených leadů ze všech záznamů", icon: Tag },
   ];
 
   return (
@@ -183,7 +179,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               <LatestVehiclesTable vehicles={vehicles.slice(0, 5)} />
             </section>
 
-            <LeadManagement inquiries={inquiries} appointmentRequests={appointmentRequests} />
+            <LeadManagement leads={leads} />
 
             <section id="vsechny-vozy" className="mt-7 rounded-2xl border border-brand-line bg-white p-5 shadow-sm sm:p-6">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -203,6 +199,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                 vehicles={vehicles}
                 canManageVehicles={canManageVehicles}
                 editingVehicle={editingVehicle}
+                leadCountsByVehicleId={leadCountsByVehicleId}
               />
             </section>
 
@@ -252,6 +249,32 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       </div>
     </div>
   );
+}
+
+function getLeadOverviewStats(leads: CrmLead[]) {
+  const newLeads = leads.filter((lead) => lead.status === "new").length;
+  const closedLeads = leads.filter((lead) => lead.status === "closed").length;
+  const rejectedLeads = leads.filter((lead) => lead.status === "rejected").length;
+  const openLeads = leads.length - closedLeads - rejectedLeads;
+  const conversionRate = leads.length ? Math.round((closedLeads / leads.length) * 100) : 0;
+
+  return {
+    newLeads,
+    openLeads,
+    closedLeads,
+    conversionRate,
+  };
+}
+
+function getLeadCountsByVehicleId(leads: CrmLead[]) {
+  return leads.reduce<Record<string, number>>((counts, lead) => {
+    if (!lead.vehicleId) {
+      return counts;
+    }
+
+    counts[lead.vehicleId] = (counts[lead.vehicleId] ?? 0) + 1;
+    return counts;
+  }, {});
 }
 
 function LatestVehiclesTable({ vehicles }: { vehicles: Vehicle[] }) {

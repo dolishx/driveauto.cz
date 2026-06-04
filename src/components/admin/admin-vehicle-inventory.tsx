@@ -48,10 +48,12 @@ export function AdminVehicleInventory({
   vehicles,
   canManageVehicles,
   editingVehicle,
+  leadCountsByVehicleId = {},
 }: {
   vehicles: Vehicle[];
   canManageVehicles: boolean;
   editingVehicle: Vehicle | null;
+  leadCountsByVehicleId?: Record<string, number>;
 }) {
   const firstSupabaseVehicle = useMemo(() => vehicles.find((vehicle) => vehicle.adminStatus), [vehicles]);
   const counts = useMemo(() => getLifecycleCounts(vehicles), [vehicles]);
@@ -121,6 +123,9 @@ export function AdminVehicleInventory({
                       {vehicle.fuel} · {vehicle.transmission}
                     </span>
                     {vehicle.licensePlate ? <span>SPZ: {vehicle.licensePlate}</span> : null}
+                    <a href="#poptavky" className="font-semibold text-brand-blue hover:text-brand-blue-dark">
+                      Leady: {leadCountsByVehicleId[vehicle.id] ?? 0}
+                    </a>
                   </div>
                 </td>
                 <td className="py-4 font-bold text-brand-blue">{formatPrice(vehicle.price)}</td>

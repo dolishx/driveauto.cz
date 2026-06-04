@@ -45,7 +45,53 @@ export type Service = {
   status?: "active" | "coming_soon" | "draft";
 };
 
-export type LeadStatus = "new" | "contacted" | "scheduled" | "completed" | "closed";
+export type LeadStatus =
+  | "new"
+  | "contacted"
+  | "scheduled"
+  | "offer_sent"
+  | "waiting_decision"
+  | "closed"
+  | "rejected";
+
+export type LeadSourceType = "inquiry" | "appointment";
+
+export type LeadNote = {
+  id: string;
+  text: string;
+  createdAt: string;
+};
+
+export type LeadStatusHistoryEntry = {
+  id: string;
+  fromStatus?: LeadStatus;
+  toStatus: LeadStatus;
+  note?: string;
+  createdAt: string;
+};
+
+export type CrmLead = {
+  id: string;
+  sourceId: string;
+  sourceType: LeadSourceType;
+  leadId: string;
+  name: string;
+  phone: string;
+  email: string;
+  vehicleId?: string;
+  vehicleName: string;
+  vehicleSlug?: string;
+  source: string;
+  status: LeadStatus;
+  notes: LeadNote[];
+  statusHistory: LeadStatusHistoryEntry[];
+  message?: string;
+  appointmentDate?: string;
+  appointmentTime?: string;
+  appointmentNote?: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type Inquiry = {
   id: string;
@@ -126,4 +172,6 @@ export type SubmissionResult = {
   message?: string;
   vehicleId?: string;
   vehicleSlug?: string;
+  leadNote?: LeadNote;
+  leadStatus?: LeadStatus;
 };
