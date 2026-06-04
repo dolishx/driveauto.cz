@@ -150,36 +150,120 @@ export async function updateVehicleAction(
     return { ok: false, configured: true, error: "Neplatné ID vozu." };
   }
 
+  const title = requiredText(formData.get("title"), "Název vozu je povinný.");
+  const brand = requiredText(formData.get("brand"), "Značka je povinná.");
+  const model = requiredText(formData.get("model"), "Model je povinný.");
+
+  if ("error" in title) return { ok: false, configured: true, error: title.error };
+  if ("error" in brand) return { ok: false, configured: true, error: brand.error };
+  if ("error" in model) return { ok: false, configured: true, error: model.error };
+
   try {
+    const { data: currentVehicle, error: currentVehicleError } = await supabase
+      .from("vehicles")
+      .select("slug,title,brand,model,year,image_url,gallery_urls")
+      .eq("id", vehicleId)
+      .maybeSingle();
+
+    if (currentVehicleError) {
+      return { ok: false, configured: true, error: currentVehicleError.message };
+    }
+
+    if (!currentVehicle) {
+      return { ok: false, configured: true, error: "Vůz nebyl nalezen." };
+    }
+
+    const year = textValue(formData.get("year"));
+    const yearNumber = toNumberOrNull(year);
+    const slugRelevantFieldsChanged =
+      currentVehicle.title !== title.value ||
+      currentVehicle.brand !== brand.value ||
+      currentVehicle.model !== model.value ||
+      currentVehicle.year !== yearNumber;
+    const slug = slugRelevantFieldsChanged
+      ? await createUniqueVehicleSlug({
+          brand: brand.value,
+          model: model.value,
+          title: title.value,
+          year,
+          excludeVehicleId: vehicleId,
+        })
+      : currentVehicle.slug;
+
+    const imageUpload = await uploadVehicleImages({
+      supabase,
+      imageFiles: collectVehicleImageFiles(formData),
+      vehicleId,
+      fileNamePrefix: `edit-${Date.now()}-${randomUUID().slice(0, 8)}`,
+    });
+
+    if (!imageUpload.ok) {
+      return imageUpload;
+    }
+
+    const keptGalleryUrls = uniqueUrls(formData.getAll("existingGalleryUrls").map(textValue));
+    const primaryImageUrl = emptyToNull(textValue(formData.get("primaryImageUrl")));
+    const manualImageUrl = emptyToNull(textValue(formData.get("imageUrl")));
+    const initialImageUrl = emptyToNull(textValue(formData.get("initialImageUrl")));
+    const manualImageChanged =
+      manualImageUrl !== null && manualImageUrl !== initialImageUrl && !keptGalleryUrls.includes(manualImageUrl);
+    const retainedGalleryUrls = orderGalleryWithPrimary(keptGalleryUrls, primaryImageUrl);
+    const newImagesAsPrimary = formData.get("newImagesAsPrimary") === "on";
+    const galleryWithManualUrl = manualImageChanged && manualImageUrl
+      ? [manualImageUrl, ...retainedGalleryUrls]
+      : retainedGalleryUrls;
+    const galleryUrls = uniqueUrls(
+      newImagesAsPrimary && imageUpload.publicUrls.length
+        ? [...imageUpload.publicUrls, ...galleryWithManualUrl]
+        : [...galleryWithManualUrl, ...imageUpload.publicUrls],
+    );
+    const imageUrl = galleryUrls[0] ?? (manualImageChanged ? manualImageUrl : null) ?? normalizeImageUrl("");
+
     const { data, error } = await supabase
       .from("vehicles")
       .update({
-        title: emptyToNull(textValue(formData.get("title"))),
-        brand: emptyToNull(textValue(formData.get("brand"))),
-        model: emptyToNull(textValue(formData.get("model"))),
-        year: toNumberOrNull(textValue(formData.get("year"))),
+        slug,
+        title: title.value,
+        brand: brand.value,
+        model: model.value,
+        year: yearNumber,
         mileage: toNumberOrNull(textValue(formData.get("mileage"))),
         fuel: emptyToNull(textValue(formData.get("fuel"))),
         transmission: emptyToNull(textValue(formData.get("transmission"))),
         price_czk: toNumberOrNull(textValue(formData.get("priceCzk"))),
+        category: emptyToNull(textValue(formData.get("category"))) ?? "Osobní vozy",
+        body_type: emptyToNull(textValue(formData.get("bodyType"))),
         color: emptyToNull(textValue(formData.get("color"))),
         power_kw: toNumberOrNull(textValue(formData.get("powerKw"))),
         engine: emptyToNull(textValue(formData.get("engine"))),
+        vin: emptyToNull(textValue(formData.get("vin"))),
         license_plate: emptyToNull(textValue(formData.get("licensePlate"))),
-        image_url: normalizeImageUrl(textValue(formData.get("imageUrl"))),
+        status: normalizeVehicleStatus(textValue(formData.get("status"))),
+        is_featured: formData.get("isFeatured") === "on",
+        image_url: imageUrl,
+        gallery_urls: galleryUrls.length ? galleryUrls : null,
         description: emptyToNull(textValue(formData.get("description"))),
+        updated_at: new Date().toISOString(),
       })
       .eq("id", vehicleId)
       .select("slug")
       .maybeSingle();
 
     if (error) {
+      await removeUploadedVehicleImages(supabase, imageUpload.storagePaths);
       return { ok: false, configured: true, error: error.message };
     }
 
+    revalidateInventoryPaths(currentVehicle.slug);
     revalidateInventoryPaths(data?.slug);
 
-    return { ok: true, configured: true, message: "Vůz byl aktualizován." };
+    return {
+      ok: true,
+      configured: true,
+      message: "Vůz byl aktualizován.",
+      vehicleId,
+      vehicleSlug: data?.slug ?? slug ?? undefined,
+    };
   } catch (error) {
     return {
       ok: false,
@@ -280,10 +364,12 @@ async function uploadVehicleImages({
   supabase,
   imageFiles,
   vehicleId,
+  fileNamePrefix,
 }: {
   supabase: NonNullable<ReturnType<typeof getSupabaseServiceClient>>;
   imageFiles: File[];
   vehicleId: string;
+  fileNamePrefix?: string;
 }): Promise<VehicleImageUploadResult> {
   if (!imageFiles.length) {
     return { ok: true, configured: true, publicUrls: [], storagePaths: [] };
@@ -328,7 +414,7 @@ async function uploadVehicleImages({
 
   for (const [index, imageFile] of imageFiles.entries()) {
     const extension = allowedVehicleImageTypes.get(imageFile.type) ?? "jpg";
-    const fileName = index === 0 ? "main" : `gallery-${index}`;
+    const fileName = fileNamePrefix ? `${fileNamePrefix}-${index + 1}` : index === 0 ? "main" : `gallery-${index}`;
     const storagePath = `vehicles/${vehicleId}/${fileName}.${extension}`;
 
     try {
@@ -395,11 +481,13 @@ async function createUniqueVehicleSlug({
   model,
   title,
   year,
+  excludeVehicleId,
 }: {
   brand: string;
   model: string;
   title: string;
   year: string;
+  excludeVehicleId?: string;
 }) {
   const supabase = getSupabaseServiceClient();
   const base = vehicleSlugBase({ brand, model, title, year });
@@ -410,9 +498,14 @@ async function createUniqueVehicleSlug({
 
   const { data } = await supabase
     .from("vehicles")
-    .select("slug")
+    .select("id,slug")
     .like("slug", `${base}%`);
-  const existingSlugs = new Set((data ?? []).map((item) => item.slug).filter(Boolean));
+  const existingSlugs = new Set(
+    (data ?? [])
+      .filter((item) => item.id !== excludeVehicleId)
+      .map((item) => item.slug)
+      .filter(Boolean),
+  );
 
   if (!existingSlugs.has(base)) {
     return base;
@@ -460,6 +553,32 @@ function toNumberOrNull(value?: string) {
 function normalizeImageUrl(value?: string) {
   const normalized = value?.trim();
   return normalized || "/images/car-superb.jpg";
+}
+
+function uniqueUrls(urls: Array<string | null | undefined>) {
+  const seen = new Set<string>();
+  const unique: string[] = [];
+
+  for (const url of urls) {
+    const normalized = url?.trim();
+
+    if (!normalized || seen.has(normalized)) {
+      continue;
+    }
+
+    seen.add(normalized);
+    unique.push(normalized);
+  }
+
+  return unique;
+}
+
+function orderGalleryWithPrimary(urls: string[], primaryUrl?: string | null) {
+  if (!primaryUrl || !urls.includes(primaryUrl)) {
+    return urls;
+  }
+
+  return [primaryUrl, ...urls.filter((url) => url !== primaryUrl)];
 }
 
 function normalizeVehicleStatus(value?: string): SupabaseVehicleStatus {

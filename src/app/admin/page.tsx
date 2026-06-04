@@ -1,25 +1,17 @@
 import {
   AlertTriangle,
-  Archive,
   Car,
   CheckCircle2,
   ClipboardList,
   Database,
-  Eye,
   Folder,
   MessageSquare,
   PlusCircle,
-  RefreshCw,
   Tag,
 } from "lucide-react";
 
 import { logoutAdmin } from "@/app/admin/actions";
-import {
-  archiveVehicleFormAction,
-  draftVehicleFormAction,
-  publishVehicleFormAction,
-  soldVehicleFormAction,
-} from "@/app/admin/vehicle-actions";
+import { AdminVehicleInventory } from "@/components/admin/admin-vehicle-inventory";
 import { AdminLoginScreen } from "@/components/admin/admin-login-screen";
 import { AddVehicleForm } from "@/components/admin/add-vehicle-form";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
@@ -29,7 +21,7 @@ import { Button, ButtonLink } from "@/components/ui/button";
 import { getAdminVehicles } from "@/lib/admin-data";
 import { hasAdminSession } from "@/lib/admin-auth";
 import { getAppointmentRequests, getInquiries } from "@/lib/data";
-import { formatMileage, formatPrice } from "@/lib/format";
+import { formatPrice } from "@/lib/format";
 import { hasSupabaseServiceRoleConfig } from "@/lib/supabase/server";
 import type { Vehicle } from "@/types";
 
@@ -66,18 +58,27 @@ const managementCards = [
   },
 ];
 
-export default async function AdminPage() {
+type AdminPageProps = {
+  searchParams: Promise<{ editVehicle?: string | string[] }>;
+};
+
+export default async function AdminPage({ searchParams }: AdminPageProps) {
   const isAdminUnlocked = await hasAdminSession();
 
   if (!isAdminUnlocked) {
     return <AdminLoginScreen />;
   }
 
+  const query = await searchParams;
+  const selectedVehicleId = Array.isArray(query.editVehicle)
+    ? query.editVehicle[0]
+    : query.editVehicle;
   const [vehicles, inquiries, appointmentRequests] = await Promise.all([
     getAdminVehicles(),
     getInquiries(),
     getAppointmentRequests(),
   ]);
+  const editingVehicle = vehicles.find((vehicle) => vehicle.id === selectedVehicleId && vehicle.adminStatus) ?? null;
   const activeVehicles = vehicles.filter(
     (vehicle) =>
       vehicle.status === "Dostupné" ||
@@ -195,7 +196,7 @@ export default async function AdminPage() {
                   <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">Všechny vozy</p>
                   <h2 className="mt-2 text-2xl font-bold tracking-[-0.035em]">Skladová nabídka</h2>
                   <p className="mt-2 text-sm text-brand-muted">
-                    Administrativní přehled pro kontrolu stavu vozů. Úpravy stavů budou doplněny po zabezpečení administrace.
+                    Administrativní přehled pro kontrolu stavu vozů, změnu statusu a editaci obsahu nabídky.
                   </p>
                 </div>
                 <a href="#pridat-vuz" className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-brand-blue px-4 text-sm font-semibold text-white shadow-[0_14px_26px_rgba(7,95,232,0.22)] hover:bg-brand-blue-dark">
@@ -203,40 +204,11 @@ export default async function AdminPage() {
                   Přidat vůz
                 </a>
               </div>
-              <div className="mt-5 overflow-x-auto">
-                <table className="w-full min-w-[980px] text-left text-sm">
-                  <thead className="text-xs uppercase tracking-wide text-brand-muted">
-                    <tr className="border-b border-brand-line">
-                      <th className="py-3 font-bold">Vůz</th>
-                      <th className="py-3 font-bold">Parametry</th>
-                      <th className="py-3 font-bold">Cena</th>
-                      <th className="py-3 font-bold">Stav</th>
-                      <th className="py-3 font-bold">Zdroj</th>
-                      <th className="py-3 font-bold">Akce</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {vehicles.map((vehicle) => (
-                      <tr key={vehicle.id} className="border-b border-brand-line last:border-b-0">
-                        <td className="py-4">
-                          <VehicleIdentity vehicle={vehicle} />
-                        </td>
-                        <td className="py-4 text-brand-muted">
-                          {vehicle.year} · {formatMileage(vehicle.mileage)} · {vehicle.fuel} · {vehicle.transmission}
-                        </td>
-                        <td className="py-4 font-bold text-brand-blue">{formatPrice(vehicle.price)}</td>
-                        <td className="py-4">
-                          <StatusBadge status={vehicle.status} />
-                        </td>
-                        <td className="py-4 text-brand-muted">{vehicle.adminStatus ? "Supabase" : "Lokální fallback"}</td>
-                        <td className="py-4">
-                          <VehicleStatusActions vehicle={vehicle} canManageVehicles={canManageVehicles} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <AdminVehicleInventory
+                vehicles={vehicles}
+                canManageVehicles={canManageVehicles}
+                editingVehicle={editingVehicle}
+              />
             </section>
 
             <section id="pridat-vuz" className="mt-7">
@@ -363,67 +335,6 @@ function StatusBadge({ status }: { status: Vehicle["status"] }) {
     <span className={`rounded-full px-3 py-1 text-xs font-bold ${className}`}>
       {status}
     </span>
-  );
-}
-
-function VehicleStatusActions({
-  vehicle,
-  canManageVehicles,
-}: {
-  vehicle: Vehicle;
-  canManageVehicles: boolean;
-}) {
-  const isSupabaseRow = Boolean(vehicle.adminStatus);
-
-  if (!isSupabaseRow) {
-    return <p className="text-xs font-semibold text-brand-muted">Pouze fallback</p>;
-  }
-
-  const disabled = !canManageVehicles;
-
-  return (
-    <div className="flex min-w-44 flex-wrap gap-2">
-      <form action={publishVehicleFormAction.bind(null, vehicle.id)}>
-        <button
-          type="submit"
-          disabled={disabled}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-brand-line bg-white px-3 text-xs font-bold text-brand-navy hover:border-brand-blue/35 hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Eye className="h-3.5 w-3.5 text-brand-blue" />
-          Publikovat
-        </button>
-      </form>
-      <form action={draftVehicleFormAction.bind(null, vehicle.id)}>
-        <button
-          type="submit"
-          disabled={disabled}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-brand-line bg-white px-3 text-xs font-bold text-brand-navy hover:border-brand-blue/35 hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <RefreshCw className="h-3.5 w-3.5 text-brand-blue" />
-          Koncept
-        </button>
-      </form>
-      <form action={soldVehicleFormAction.bind(null, vehicle.id)}>
-        <button
-          type="submit"
-          disabled={disabled}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-brand-line bg-white px-3 text-xs font-bold text-brand-navy hover:border-brand-blue/35 hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Tag className="h-3.5 w-3.5 text-brand-blue" />
-          Prodáno
-        </button>
-      </form>
-      <form action={archiveVehicleFormAction.bind(null, vehicle.id)}>
-        <button
-          type="submit"
-          disabled={disabled}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-rose-100 bg-white px-3 text-xs font-bold text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Archive className="h-3.5 w-3.5" />
-          Archiv
-        </button>
-      </form>
-    </div>
   );
 }
 

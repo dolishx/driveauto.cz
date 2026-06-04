@@ -142,20 +142,29 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
             </section>
 
             <SectionCard title="Výbava a praktické informace">
-              <div className="grid gap-3 sm:grid-cols-2">
-                {[
-                  vehicle.transmission,
-                  vehicle.fuel,
-                  vehicle.category,
-                  "Osobní prohlídka po domluvě",
-                  "Dostupnost potvrdíme před návštěvou",
-                  "Detailní dotazy vyřešíme individuálně",
-                ].map((item) => (
-                  <p key={item} className="flex items-start gap-3 rounded-xl bg-brand-soft/60 p-3 text-sm font-semibold text-brand-navy">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-blue" />
-                    {item}
+              <div className="space-y-5">
+                {vehicle.description ? (
+                  <p className="rounded-xl border border-brand-line bg-white p-4 text-sm leading-7 text-brand-muted">
+                    {vehicle.description}
                   </p>
-                ))}
+                ) : null}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {[
+                    vehicle.transmission,
+                    vehicle.fuel,
+                    vehicle.category,
+                    vehicle.bodyType,
+                    vehicle.color,
+                    "Osobní prohlídka po domluvě",
+                    "Dostupnost potvrdíme před návštěvou",
+                    "Detailní dotazy vyřešíme individuálně",
+                  ].filter((item): item is string => Boolean(item)).map((item) => (
+                    <p key={item} className="flex items-start gap-3 rounded-xl bg-brand-soft/60 p-3 text-sm font-semibold text-brand-navy">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-blue" />
+                      {item}
+                    </p>
+                  ))}
+                </div>
               </div>
             </SectionCard>
 
@@ -165,6 +174,12 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
                 <DetailRow label="Model" value={vehicle.model} />
                 <DetailRow label="Motorizace / varianta" value={vehicle.variant} />
                 <DetailRow label="Kategorie" value={vehicle.category} />
+                {vehicle.bodyType ? <DetailRow label="Karoserie" value={vehicle.bodyType} /> : null}
+                {vehicle.color ? <DetailRow label="Barva" value={vehicle.color} /> : null}
+                {vehicle.engine ? <DetailRow label="Motor" value={vehicle.engine} /> : null}
+                {vehicle.powerKw ? <DetailRow label="Výkon" value={`${vehicle.powerKw} kW`} /> : null}
+                {vehicle.licensePlate ? <DetailRow label="Štítek SPZ" value={vehicle.licensePlate} /> : null}
+                {vehicle.vin ? <DetailRow label="VIN" value={vehicle.vin} /> : null}
                 <DetailRow label="Rok výroby" value={String(vehicle.year)} />
                 <DetailRow label="Nájezd" value={formatMileage(vehicle.mileage)} />
                 <DetailRow label="Palivo" value={vehicle.fuel} />

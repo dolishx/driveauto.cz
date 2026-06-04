@@ -21,6 +21,13 @@ export type Vehicle = {
   image: string;
   gallery?: string[];
   category: VehicleCategory;
+  bodyType?: string;
+  color?: string;
+  powerKw?: number;
+  engine?: string;
+  vin?: string;
+  licensePlate?: string;
+  description?: string;
   featured: boolean;
   createdAt: string;
   adminStatus?: SupabaseVehicleStatus;

@@ -34,10 +34,17 @@ type VehicleRow = {
   transmission: string | null;
   price_czk: number | null;
   category: string | null;
+  body_type: string | null;
+  color: string | null;
+  power_kw: number | null;
+  engine: string | null;
+  vin: string | null;
+  license_plate: string | null;
   status: string | null;
   is_featured: boolean | null;
   image_url: string | null;
   gallery_urls: string[] | null;
+  description: string | null;
   created_at: string | null;
 };
 
@@ -561,6 +568,13 @@ export function mapVehicleRow(row: VehicleRow): Vehicle {
     image,
     gallery: gallery.length ? gallery : row.image_url ? [row.image_url] : [],
     category: normalizeCategory(row.category),
+    bodyType: row.body_type ?? undefined,
+    color: row.color ?? undefined,
+    powerKw: row.power_kw ?? undefined,
+    engine: row.engine ?? undefined,
+    vin: row.vin ?? undefined,
+    licensePlate: row.license_plate ?? undefined,
+    description: row.description ?? undefined,
     featured: Boolean(row.is_featured),
     createdAt: row.created_at ?? "",
     adminStatus: normalizeSupabaseVehicleStatus(row.status),
