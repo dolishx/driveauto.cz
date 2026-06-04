@@ -198,6 +198,39 @@ export function EditVehicleForm({
         <Input name="powerKw" label="Výkon kW" defaultValue={vehicle.powerKw ?? ""} type="number" />
         <Input name="engine" label="Motor" defaultValue={vehicle.engine ?? ""} />
         <Input name="vin" label="VIN" defaultValue={vehicle.vin ?? ""} />
+        <Input name="stkValidUntil" label="STK platná do" defaultValue={vehicle.stkValidUntil ?? ""} type="date" />
+        <Input name="originCountry" label="Země původu" defaultValue={vehicle.originCountry ?? ""} />
+        <Input name="firstRegistration" label="První registrace" defaultValue={vehicle.firstRegistration ?? ""} type="date" />
+        <Input name="ownersCount" label="Počet majitelů" defaultValue={vehicle.ownersCount ?? ""} type="number" />
+        <Input name="emissionStandard" label="Emisní norma" defaultValue={vehicle.emissionStandard ?? ""} />
+        <Input name="drivetrain" label="Pohon" defaultValue={vehicle.drivetrain ?? ""} />
+        <Input name="doorsCount" label="Počet dveří" defaultValue={vehicle.doorsCount ?? ""} type="number" />
+        <Input name="seatsCount" label="Počet míst" defaultValue={vehicle.seatsCount ?? ""} type="number" />
+        <TextareaField
+          name="serviceHistory"
+          label="Servisní historie"
+          defaultValue={vehicle.serviceHistory ?? ""}
+        />
+        <TextareaField
+          name="accidentHistory"
+          label="Historie poškození"
+          defaultValue={vehicle.accidentHistory ?? ""}
+        />
+        <TextareaField
+          name="equipment"
+          label="Výbava"
+          defaultValue={vehicle.equipment?.join("\n") ?? ""}
+        />
+        <TextareaField
+          name="conditionNote"
+          label="Stav vozu"
+          defaultValue={vehicle.conditionNote ?? ""}
+        />
+        <TextareaField
+          name="warrantyNote"
+          label="Záruka / poznámka"
+          defaultValue={vehicle.warrantyNote ?? ""}
+        />
       </div>
 
       <label className="flex items-center gap-3 rounded-xl border border-brand-line bg-white px-4 py-3 text-sm font-semibold text-brand-muted">
@@ -434,6 +467,18 @@ function Select({
           );
         })}
       </select>
+    </Field>
+  );
+}
+
+function TextareaField({ name, label, defaultValue }: { name: string; label: string; defaultValue?: string }) {
+  return (
+    <Field label={label}>
+      <textarea
+        name={name}
+        defaultValue={defaultValue}
+        className="min-h-24 rounded-lg border border-brand-line bg-white px-3 py-2 text-sm outline-none focus:border-brand-blue"
+      />
     </Field>
   );
 }

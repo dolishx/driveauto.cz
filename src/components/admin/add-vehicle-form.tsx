@@ -174,6 +174,40 @@ export function AddVehicleForm({ canManageVehicles }: { canManageVehicles: boole
         <Input name="powerKw" label="Výkon kW" placeholder="147" type="number" />
         <Input name="engine" label="Motor" placeholder="Např. 2.0 TDI" />
         <Input name="bodyType" label="Karoserie" placeholder="Např. kombi, SUV" />
+        <Input name="vin" label="VIN" placeholder="VIN vozu, pokud je připravený ke zveřejnění" />
+        <Input name="stkValidUntil" label="STK platná do" placeholder="2028-05-31" type="date" />
+        <Input name="originCountry" label="Země původu" placeholder="Např. Česká republika" />
+        <Input name="firstRegistration" label="První registrace" placeholder="2024-02-15" type="date" />
+        <Input name="ownersCount" label="Počet majitelů" placeholder="1" type="number" />
+        <Input name="emissionStandard" label="Emisní norma" placeholder="Např. Euro 6d" />
+        <Input name="drivetrain" label="Pohon" placeholder="Např. xDrive, AWD, přední pohon" />
+        <Input name="doorsCount" label="Počet dveří" placeholder="5" type="number" />
+        <Input name="seatsCount" label="Počet míst" placeholder="5" type="number" />
+        <TextareaField
+          name="serviceHistory"
+          label="Servisní historie"
+          placeholder="Např. Servisní záznamy dle dostupné dokumentace vozu."
+        />
+        <TextareaField
+          name="accidentHistory"
+          label="Historie poškození"
+          placeholder="Např. Bez evidovaného vážného poškození v dostupných podkladech."
+        />
+        <TextareaField
+          name="equipment"
+          label="Výbava"
+          placeholder="Jedna položka na řádek, případně oddělit čárkou."
+        />
+        <TextareaField
+          name="conditionNote"
+          label="Stav vozu"
+          placeholder="Stručná poznámka ke stavu karoserie, interiéru a techniky."
+        />
+        <TextareaField
+          name="warrantyNote"
+          label="Záruka / poznámka"
+          placeholder="Např. Rozsah záruky bude potvrzen podle dokumentace vozu."
+        />
         <Field label="Fotografie vozu" icon={<Upload className="h-4 w-4" />}>
           <input
             ref={imageInputRef}
@@ -348,6 +382,18 @@ function Select({
           );
         })}
       </select>
+    </Field>
+  );
+}
+
+function TextareaField({ name, label, placeholder }: { name: string; label: string; placeholder: string }) {
+  return (
+    <Field label={label}>
+      <textarea
+        name={name}
+        className="min-h-24 rounded-lg border border-brand-line px-3 py-2 text-sm outline-none focus:border-brand-blue"
+        placeholder={placeholder}
+      />
     </Field>
   );
 }

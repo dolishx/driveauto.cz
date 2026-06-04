@@ -21,6 +21,21 @@ const allowedVehicleImageTypes = new Map([
 ]);
 const uploadFailureMessage = "Nahrání fotografie se nepodařilo. Můžete vložit URL obrázku ručně.";
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const extendedVehicleColumnNames = [
+  "stk_valid_until",
+  "origin_country",
+  "first_registration",
+  "owners_count",
+  "service_history",
+  "accident_history",
+  "equipment",
+  "condition_note",
+  "warranty_note",
+  "emission_standard",
+  "drivetrain",
+  "doors_count",
+  "seats_count",
+];
 const vehicleStatuses: SupabaseVehicleStatus[] = [
   "available",
   "reserved",
@@ -78,6 +93,7 @@ export async function createVehicleAction(
     : manualImageUrl
       ? [manualImageUrl]
       : null;
+  const extendedVehicleData = parseExtendedVehicleData(formData);
 
   try {
     const { data, error } = await supabase
@@ -98,6 +114,8 @@ export async function createVehicleAction(
         color: emptyToNull(textValue(formData.get("color"))),
         power_kw: toNumberOrNull(textValue(formData.get("powerKw"))),
         engine: emptyToNull(textValue(formData.get("engine"))),
+        vin: emptyToNull(textValue(formData.get("vin"))),
+        ...extendedVehicleData,
         license_plate: emptyToNull(textValue(formData.get("licensePlate"))),
         status: normalizeVehicleStatus(textValue(formData.get("status"))),
         is_featured: formData.get("isFeatured") === "on",
@@ -110,7 +128,7 @@ export async function createVehicleAction(
 
     if (error) {
       await removeUploadedVehicleImages(supabase, imageUpload.storagePaths);
-      return { ok: false, configured: true, error: error.message };
+      return { ok: false, configured: true, error: formatVehicleMutationError(error.message) };
     }
 
     revalidateInventoryPaths(data?.slug ?? slug);
@@ -218,6 +236,7 @@ export async function updateVehicleAction(
         : [...galleryWithManualUrl, ...imageUpload.publicUrls],
     );
     const imageUrl = galleryUrls[0] ?? (manualImageChanged ? manualImageUrl : null) ?? normalizeImageUrl("");
+    const extendedVehicleData = parseExtendedVehicleData(formData);
 
     const { data, error } = await supabase
       .from("vehicles")
@@ -237,6 +256,7 @@ export async function updateVehicleAction(
         power_kw: toNumberOrNull(textValue(formData.get("powerKw"))),
         engine: emptyToNull(textValue(formData.get("engine"))),
         vin: emptyToNull(textValue(formData.get("vin"))),
+        ...extendedVehicleData,
         license_plate: emptyToNull(textValue(formData.get("licensePlate"))),
         status: normalizeVehicleStatus(textValue(formData.get("status"))),
         is_featured: formData.get("isFeatured") === "on",
@@ -251,7 +271,7 @@ export async function updateVehicleAction(
 
     if (error) {
       await removeUploadedVehicleImages(supabase, imageUpload.storagePaths);
-      return { ok: false, configured: true, error: error.message };
+      return { ok: false, configured: true, error: formatVehicleMutationError(error.message) };
     }
 
     revalidateInventoryPaths(currentVehicle.slug);
@@ -550,9 +570,51 @@ function toNumberOrNull(value?: string) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function parseExtendedVehicleData(formData: FormData) {
+  return {
+    stk_valid_until: emptyToNull(textValue(formData.get("stkValidUntil"))),
+    origin_country: emptyToNull(textValue(formData.get("originCountry"))),
+    first_registration: emptyToNull(textValue(formData.get("firstRegistration"))),
+    owners_count: toNumberOrNull(textValue(formData.get("ownersCount"))),
+    service_history: emptyToNull(textValue(formData.get("serviceHistory"))),
+    accident_history: emptyToNull(textValue(formData.get("accidentHistory"))),
+    equipment: parseEquipment(textValue(formData.get("equipment"))),
+    condition_note: emptyToNull(textValue(formData.get("conditionNote"))),
+    warranty_note: emptyToNull(textValue(formData.get("warrantyNote"))),
+    emission_standard: emptyToNull(textValue(formData.get("emissionStandard"))),
+    drivetrain: emptyToNull(textValue(formData.get("drivetrain"))),
+    doors_count: toNumberOrNull(textValue(formData.get("doorsCount"))),
+    seats_count: toNumberOrNull(textValue(formData.get("seatsCount"))),
+  };
+}
+
+function parseEquipment(value?: string) {
+  const items = value
+    ?.split(/[\n;,]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  if (!items?.length) {
+    return null;
+  }
+
+  return Array.from(new Set(items));
+}
+
 function normalizeImageUrl(value?: string) {
   const normalized = value?.trim();
   return normalized || "/images/car-superb.jpg";
+}
+
+function formatVehicleMutationError(message: string) {
+  if (
+    message.includes("schema cache") &&
+    extendedVehicleColumnNames.some((columnName) => message.includes(columnName))
+  ) {
+    return "Rozšířená data vozu vyžadují aplikovanou migraci Stage 5.0.0 v Supabase.";
+  }
+
+  return message;
 }
 
 function uniqueUrls(urls: Array<string | null | undefined>) {

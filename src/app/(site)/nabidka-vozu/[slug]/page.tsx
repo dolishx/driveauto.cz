@@ -62,6 +62,57 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
 
   const vehicleName = `${vehicle.brand} ${vehicle.model}`;
   const galleryImages = [vehicle.image, ...(vehicle.gallery ?? [])];
+  const basicInfoRows = compactDetailRows([
+    { label: "Značka", value: vehicle.brand },
+    { label: "Model", value: vehicle.model },
+    { label: "Motorizace / varianta", value: vehicle.variant },
+    { label: "Kategorie", value: vehicle.category },
+    { label: "Karoserie", value: vehicle.bodyType },
+    { label: "Barva", value: vehicle.color },
+    { label: "Rok výroby", value: vehicle.year ? String(vehicle.year) : undefined },
+    { label: "Nájezd", value: vehicle.mileage ? formatMileage(vehicle.mileage) : undefined },
+    { label: "Počet dveří", value: formatCount(vehicle.doorsCount) },
+    { label: "Počet míst", value: formatCount(vehicle.seatsCount) },
+  ]);
+  const technicalRows = compactDetailRows([
+    { label: "Motor", value: vehicle.engine },
+    { label: "Výkon", value: vehicle.powerKw ? `${vehicle.powerKw} kW` : undefined },
+    { label: "Palivo", value: vehicle.fuel },
+    { label: "Převodovka", value: vehicle.transmission },
+    { label: "Pohon", value: vehicle.drivetrain },
+    { label: "Emisní norma", value: vehicle.emissionStandard },
+  ]);
+  const historyRows = compactDetailRows([
+    { label: "VIN", value: vehicle.vin },
+    { label: "Štítek SPZ", value: vehicle.licensePlate },
+    { label: "Země původu", value: vehicle.originCountry },
+    { label: "První registrace", value: formatDate(vehicle.firstRegistration) },
+    { label: "STK platná do", value: formatDate(vehicle.stkValidUntil) },
+    { label: "Počet majitelů", value: formatCount(vehicle.ownersCount) },
+    { label: "Servisní historie", value: vehicle.serviceHistory },
+    { label: "Historie poškození", value: vehicle.accidentHistory },
+  ]);
+  const conditionRows = compactDetailRows([
+    { label: "Aktuální stav", value: vehicle.status },
+    { label: "Stav vozu", value: vehicle.conditionNote },
+    { label: "Záruka / poznámka", value: vehicle.warrantyNote },
+  ]);
+  const equipmentItems = vehicle.equipment ?? [];
+  const specTileCandidates: Array<{ icon: ReactNode; label: string; value?: string }> = [
+    {
+      icon: <Calendar className="h-5 w-5" />,
+      label: "Rok výroby",
+      value: vehicle.year ? String(vehicle.year) : undefined,
+    },
+    {
+      icon: <Gauge className="h-5 w-5" />,
+      label: "Nájezd",
+      value: vehicle.mileage ? formatMileage(vehicle.mileage) : undefined,
+    },
+    { icon: <Fuel className="h-5 w-5" />, label: "Palivo", value: vehicle.fuel },
+    { icon: <Settings className="h-5 w-5" />, label: "Převodovka", value: vehicle.transmission },
+  ];
+  const specTiles = specTileCandidates.flatMap((item) => (item.value ? [{ ...item, value: item.value }] : []));
 
   return (
     <div className="bg-white">
@@ -134,75 +185,89 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
               </div>
             </section>
 
-            <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <SpecTile icon={<Calendar className="h-5 w-5" />} label="Rok výroby" value={String(vehicle.year)} />
-              <SpecTile icon={<Gauge className="h-5 w-5" />} label="Nájezd" value={formatMileage(vehicle.mileage)} />
-              <SpecTile icon={<Fuel className="h-5 w-5" />} label="Palivo" value={vehicle.fuel} />
-              <SpecTile icon={<Settings className="h-5 w-5" />} label="Převodovka" value={vehicle.transmission} />
-            </section>
+            {specTiles.length ? (
+              <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {specTiles.map((item) => (
+                  <SpecTile key={item.label} icon={item.icon} label={item.label} value={item.value} />
+                ))}
+              </section>
+            ) : null}
 
-            <SectionCard title="Výbava a praktické informace">
-              <div className="space-y-5">
-                {vehicle.description ? (
-                  <p className="rounded-xl border border-brand-line bg-white p-4 text-sm leading-7 text-brand-muted">
-                    {vehicle.description}
-                  </p>
-                ) : null}
+            {basicInfoRows.length || vehicle.description ? (
+              <SectionCard title="Základní informace">
+                <div className="space-y-5">
+                  {vehicle.description ? (
+                    <p className="rounded-xl border border-brand-line bg-white p-4 text-sm leading-7 text-brand-muted">
+                      {vehicle.description}
+                    </p>
+                  ) : null}
+                  <DetailGrid rows={basicInfoRows} />
+                </div>
+              </SectionCard>
+            ) : null}
+
+            {technicalRows.length ? (
+              <SectionCard title="Technické údaje">
+                <DetailGrid rows={technicalRows} />
+              </SectionCard>
+            ) : null}
+
+            {historyRows.length ? (
+              <SectionCard title="Historie a původ">
+                <DetailGrid rows={historyRows} />
+              </SectionCard>
+            ) : null}
+
+            {equipmentItems.length ? (
+              <SectionCard title="Výbava">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {[
-                    vehicle.transmission,
-                    vehicle.fuel,
-                    vehicle.category,
-                    vehicle.bodyType,
-                    vehicle.color,
-                    "Osobní prohlídka po domluvě",
-                    "Dostupnost potvrdíme před návštěvou",
-                    "Detailní dotazy vyřešíme individuálně",
-                  ].filter((item): item is string => Boolean(item)).map((item) => (
-                    <p key={item} className="flex items-start gap-3 rounded-xl bg-brand-soft/60 p-3 text-sm font-semibold text-brand-navy">
+                  {equipmentItems.map((item) => (
+                    <p
+                      key={item}
+                      className="flex items-start gap-3 rounded-xl bg-brand-soft/60 p-3 text-sm font-semibold text-brand-navy"
+                    >
                       <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-blue" />
                       {item}
                     </p>
                   ))}
                 </div>
-              </div>
-            </SectionCard>
+              </SectionCard>
+            ) : null}
 
-            <SectionCard title="Technické údaje">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <DetailRow label="Značka" value={vehicle.brand} />
-                <DetailRow label="Model" value={vehicle.model} />
-                <DetailRow label="Motorizace / varianta" value={vehicle.variant} />
-                <DetailRow label="Kategorie" value={vehicle.category} />
-                {vehicle.bodyType ? <DetailRow label="Karoserie" value={vehicle.bodyType} /> : null}
-                {vehicle.color ? <DetailRow label="Barva" value={vehicle.color} /> : null}
-                {vehicle.engine ? <DetailRow label="Motor" value={vehicle.engine} /> : null}
-                {vehicle.powerKw ? <DetailRow label="Výkon" value={`${vehicle.powerKw} kW`} /> : null}
-                {vehicle.licensePlate ? <DetailRow label="Štítek SPZ" value={vehicle.licensePlate} /> : null}
-                {vehicle.vin ? <DetailRow label="VIN" value={vehicle.vin} /> : null}
-                <DetailRow label="Rok výroby" value={String(vehicle.year)} />
-                <DetailRow label="Nájezd" value={formatMileage(vehicle.mileage)} />
-                <DetailRow label="Palivo" value={vehicle.fuel} />
-                <DetailRow label="Převodovka" value={vehicle.transmission} />
-              </div>
-            </SectionCard>
+            {conditionRows.length ? (
+              <SectionCard title="Stav vozu">
+                <DetailGrid rows={conditionRows} />
+                <p className="mt-4 rounded-xl border border-brand-line bg-white p-4 text-sm leading-6 text-brand-muted">
+                  Stav a dostupnost vozu potvrzujeme před sjednanou prohlídkou.
+                </p>
+              </SectionCard>
+            ) : null}
 
-            <SectionCard title="Stav vozu">
+            <SectionCard title="Prohlídka vozu">
               <div className="grid gap-4 md:grid-cols-[1fr_1fr]">
                 <div className="rounded-xl border border-brand-line bg-white p-4">
-                  <p className="text-sm font-semibold uppercase tracking-wide text-brand-muted">Aktuální stav</p>
-                  <p className="mt-2 text-xl font-bold text-brand-navy">{vehicle.status}</p>
-                  <p className="mt-2 text-sm leading-6 text-brand-muted">
-                    Stav a dostupnost vozu potvrzujeme před sjednanou prohlídkou.
-                  </p>
-                </div>
-                <div className="rounded-xl border border-brand-line bg-white p-4">
-                  <p className="text-sm font-semibold uppercase tracking-wide text-brand-muted">Možnost prohlídky</p>
+                  <p className="text-sm font-semibold uppercase tracking-wide text-brand-muted">Osobní prohlídka</p>
                   <p className="mt-2 text-xl font-bold text-brand-navy">Po domluvě termínu</p>
                   <p className="mt-2 text-sm leading-6 text-brand-muted">
                     Vůz připravíme k osobnímu zhlédnutí a zodpovíme technické dotazy.
                   </p>
                 </div>
+                <div className="rounded-xl border border-brand-line bg-white p-4">
+                  <p className="text-sm font-semibold uppercase tracking-wide text-brand-muted">Dotaz k vozu</p>
+                  <p className="mt-2 text-xl font-bold text-brand-navy">Individuální domluva</p>
+                  <p className="mt-2 text-sm leading-6 text-brand-muted">
+                    Před návštěvou potvrdíme dostupnost, aktuální stav a detaily k dokumentaci.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                <ButtonLink href="/domluvit-prohlidku" className="h-12">
+                  Domluvit prohlídku
+                  <ArrowRight className="h-4 w-4" />
+                </ButtonLink>
+                <ButtonLink href="/kontakt" variant="secondary" className="h-12">
+                  Zeptat se na vůz
+                </ButtonLink>
               </div>
             </SectionCard>
           </div>
@@ -286,6 +351,21 @@ function SectionCard({ title, children }: { title: string; children: ReactNode }
   );
 }
 
+type DetailItem = {
+  label: string;
+  value?: string | null;
+};
+
+function DetailGrid({ rows }: { rows: DetailItem[] }) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {rows.map((row) => (
+        <DetailRow key={`${row.label}-${row.value}`} label={row.label} value={row.value ?? ""} />
+      ))}
+    </div>
+  );
+}
+
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-brand-line bg-white px-4 py-3">
@@ -293,6 +373,37 @@ function DetailRow({ label, value }: { label: string; value: string }) {
       <p className="mt-1 font-bold text-brand-navy">{value}</p>
     </div>
   );
+}
+
+function compactDetailRows(rows: DetailItem[]) {
+  return rows
+    .map((row) => ({
+      ...row,
+      value: row.value?.trim(),
+    }))
+    .filter((row): row is DetailItem & { value: string } => Boolean(row.value));
+}
+
+function formatDate(value?: string) {
+  if (!value) {
+    return undefined;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("cs-CZ", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+function formatCount(value?: number) {
+  return typeof value === "number" && Number.isFinite(value) ? String(value) : undefined;
 }
 
 function ContactLine({ icon, title, value }: { icon: ReactNode; title: string; value: string }) {

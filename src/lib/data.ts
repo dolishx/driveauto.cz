@@ -39,6 +39,19 @@ type VehicleRow = {
   power_kw: number | null;
   engine: string | null;
   vin: string | null;
+  stk_valid_until?: string | null;
+  origin_country?: string | null;
+  first_registration?: string | null;
+  owners_count?: number | null;
+  service_history?: string | null;
+  accident_history?: string | null;
+  equipment?: string[] | null;
+  condition_note?: string | null;
+  warranty_note?: string | null;
+  emission_standard?: string | null;
+  drivetrain?: string | null;
+  doors_count?: number | null;
+  seats_count?: number | null;
   license_plate: string | null;
   status: string | null;
   is_featured: boolean | null;
@@ -583,6 +596,19 @@ export function mapVehicleRow(row: VehicleRow): Vehicle {
     powerKw: row.power_kw ?? undefined,
     engine: row.engine ?? undefined,
     vin: row.vin ?? undefined,
+    stkValidUntil: row.stk_valid_until ?? undefined,
+    originCountry: row.origin_country ?? undefined,
+    firstRegistration: row.first_registration ?? undefined,
+    ownersCount: row.owners_count ?? undefined,
+    serviceHistory: row.service_history ?? undefined,
+    accidentHistory: row.accident_history ?? undefined,
+    equipment: normalizeTextArray(row.equipment),
+    conditionNote: row.condition_note ?? undefined,
+    warrantyNote: row.warranty_note ?? undefined,
+    emissionStandard: row.emission_standard ?? undefined,
+    drivetrain: row.drivetrain ?? undefined,
+    doorsCount: row.doors_count ?? undefined,
+    seatsCount: row.seats_count ?? undefined,
     licensePlate: row.license_plate ?? undefined,
     description: row.description ?? undefined,
     featured: Boolean(row.is_featured),
@@ -598,6 +624,15 @@ function normalizeGalleryUrls(value: string[] | null) {
   }
 
   return value.map((item) => item.trim()).filter(Boolean);
+}
+
+function normalizeTextArray(value?: string[] | null) {
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+
+  const items = value.map((item) => item.trim()).filter(Boolean);
+  return items.length ? items : undefined;
 }
 
 function mapServiceRow(row: ServiceRow): Service {

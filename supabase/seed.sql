@@ -186,6 +186,89 @@ on conflict (id) do update set
   image_url = excluded.image_url,
   description = excluded.description;
 
+update public.vehicles as vehicle
+set
+  stk_valid_until = specs.stk_valid_until,
+  origin_country = specs.origin_country,
+  first_registration = specs.first_registration,
+  owners_count = specs.owners_count,
+  service_history = specs.service_history,
+  accident_history = specs.accident_history,
+  equipment = specs.equipment,
+  condition_note = specs.condition_note,
+  warranty_note = specs.warranty_note,
+  emission_standard = specs.emission_standard,
+  drivetrain = specs.drivetrain,
+  doors_count = specs.doors_count,
+  seats_count = specs.seats_count
+from (
+  values
+    (
+      '11111111-1111-4111-8111-111111111111'::uuid,
+      '2028-03-31'::date,
+      'Německo',
+      '2024-03-12'::date,
+      1,
+      'Nový modelový ročník, servisní historie bude doložena podle dokumentace.',
+      'Stav a historie budou ověřeny před předáním.',
+      array['M Competition', 'xDrive', 'M sportovní sedadla', 'Laserové světlomety', 'Head-up displej']::text[],
+      'Prémiový sportovní vůz s nízkým nájezdem.',
+      'Rozsah záruky bude potvrzen podle dokumentace vozu.',
+      'Euro 6e',
+      'xDrive',
+      5,
+      5
+    ),
+    (
+      '33333333-3333-4333-8333-333333333333'::uuid,
+      '2027-04-30'::date,
+      'Česká republika',
+      '2021-03-18'::date,
+      1,
+      'Servisní záznamy dle dostupné dokumentace vozu.',
+      'Bez evidovaného vážného poškození v dostupných podkladech.',
+      array['LED Matrix světlomety', 'Adaptivní tempomat', 'Vyhřívaná sedadla', 'Navigace', 'Parkovací kamera']::text[],
+      'Velmi dobrý stav odpovídající stáří a nájezdu.',
+      'Rozsah záruky bude potvrzen při osobní prohlídce.',
+      'Euro 6d',
+      'Přední pohon',
+      5,
+      5
+    ),
+    (
+      '77777777-7777-4777-8777-777777777777'::uuid,
+      '2027-09-30'::date,
+      'Česká republika',
+      '2022-08-05'::date,
+      1,
+      'Servisní historie podle dostupné dokumentace.',
+      'Bez evidovaného vážného poškození v dostupných podkladech.',
+      array['AWD', 'Bezpečnostní asistenti Volvo', 'Vyhřívaná sedadla', 'Navigace', 'Elektrické víko kufru']::text[],
+      'Prémiové SUV s velmi dobrým komfortem a zachovalým interiérem.',
+      'Možnost individuálně prověřit další záruční krytí.',
+      'Euro 6d',
+      'AWD',
+      5,
+      5
+    )
+) as specs(
+  id,
+  stk_valid_until,
+  origin_country,
+  first_registration,
+  owners_count,
+  service_history,
+  accident_history,
+  equipment,
+  condition_note,
+  warranty_note,
+  emission_standard,
+  drivetrain,
+  doors_count,
+  seats_count
+)
+where vehicle.id = specs.id;
+
 insert into public.services (
   slug,
   title,
