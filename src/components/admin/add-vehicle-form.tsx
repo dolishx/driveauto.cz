@@ -131,8 +131,8 @@ export function AddVehicleForm({ canManageVehicles }: { canManageVehicles: boole
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">Přidat vůz</p>
-          <h2 className="mt-2 text-2xl font-bold tracking-[-0.035em] text-brand-navy">Nový vůz do nabídky</h2>
+          <p className="text-sm font-bold uppercase text-brand-blue">Přidat vůz</p>
+          <h2 className="mt-2 text-2xl font-bold text-brand-navy">Nový vůz do nabídky</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted">
             Formulář ukládá vozidlo serverově přes Supabase. Publikované a dostupné vozy se zobrazí ve veřejné nabídce.
           </p>
@@ -216,7 +216,7 @@ export function AddVehicleForm({ canManageVehicles }: { canManageVehicles: boole
             accept="image/jpeg,image/png,image/webp"
             multiple
             onChange={(event) => handleImageSelection(event.currentTarget.files)}
-            className="rounded-lg border border-brand-line bg-white px-3 py-2 text-sm text-brand-muted file:mr-4 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-2 file:text-sm file:font-bold file:text-brand-blue hover:file:bg-blue-100 focus:border-brand-blue focus:outline-none"
+            className="rounded-lg border border-brand-line bg-white px-3 py-2 text-sm text-brand-muted file:mr-4 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-2 file:text-sm file:font-bold file:text-brand-blue hover:file:bg-brand-blue/10 focus:border-brand-blue focus:outline-none"
           />
           <span className="text-xs leading-5 text-brand-muted">
             Nahrajte fotografie vozu ve formátu JPG, PNG nebo WebP do 5 MB za soubor. První fotografie bude hlavní.

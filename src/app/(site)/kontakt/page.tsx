@@ -49,12 +49,12 @@ export default function ContactPage() {
           {contactCards.map((card) => {
             const Icon = card.icon;
             return (
-              <article key={card.title} className="rounded-2xl border border-brand-line bg-white p-6 shadow-[0_14px_38px_rgba(8,23,52,0.06)]">
+              <article key={card.title} className="min-w-0 rounded-2xl border border-brand-line bg-white p-5 shadow-[0_14px_38px_rgba(13,13,13,0.06)] sm:p-6">
                 <Icon className="h-9 w-9 text-brand-blue" />
                 <h2 className="mt-4 font-bold text-brand-navy">{card.title}</h2>
                 <div className="mt-3 space-y-1 text-sm leading-6 text-brand-muted">
                   {card.body.map((line) => (
-                    <p key={line} className={line.includes("Bude doplněno") ? "font-bold text-brand-blue" : ""}>
+                    <p key={line} className={line.includes("Bude doplněno") ? "font-bold text-brand-blue" : "break-words"}>
                       {line}
                     </p>
                   ))}
@@ -72,10 +72,10 @@ export default function ContactPage() {
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.3fr]">
           <ContactForm />
 
-          <div className="grid gap-6">
+          <div className="grid min-w-0 gap-6">
             <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
               <MapCard />
-              <aside className="rounded-2xl border border-brand-line bg-white p-6 shadow-[0_14px_38px_rgba(8,23,52,0.06)]">
+              <aside className="min-w-0 rounded-2xl border border-brand-line bg-white p-5 shadow-[0_14px_38px_rgba(13,13,13,0.06)] sm:p-6">
                 <h2 className="text-xl font-bold text-brand-navy">Otevírací doba</h2>
                 <div className="mt-5 rounded-xl bg-brand-soft p-4 text-sm leading-6">
                   <p className="font-bold text-brand-blue">Bude doplněno</p>
@@ -84,12 +84,12 @@ export default function ContactPage() {
               </aside>
             </div>
 
-            <div className="rounded-2xl bg-brand-soft p-6 md:flex md:items-center md:justify-between">
-              <div>
+            <div className="min-w-0 rounded-2xl bg-brand-soft p-5 md:flex md:items-center md:justify-between sm:p-6">
+              <div className="min-w-0">
                 <h2 className="text-xl font-bold text-brand-navy">Potřebujete rychlou pomoc?</h2>
                 <p className="mt-2 text-brand-muted">{contactNotice}</p>
               </div>
-              <div className="mt-5 inline-flex h-12 items-center gap-2 rounded-lg border border-brand-line bg-white px-5 text-sm font-bold text-brand-blue md:mt-0">
+              <div className="mt-5 inline-flex max-w-full items-center gap-2 rounded-lg border border-brand-line bg-white px-5 py-3 text-sm font-bold text-brand-blue md:mt-0">
                 <Phone className="h-4 w-4" />
                 Bude doplněno
               </div>

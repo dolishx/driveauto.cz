@@ -6,20 +6,20 @@ import { ButtonLink } from "@/components/ui/button";
 
 export function AdminLoginScreen() {
   return (
-    <main className="min-h-screen bg-[#f8fafc] px-4 py-8 text-brand-navy sm:px-6">
+    <main className="min-h-screen bg-brand-soft px-4 py-8 text-brand-navy sm:px-6">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl items-center justify-center">
-        <section className="grid w-full overflow-hidden rounded-2xl border border-brand-line bg-white shadow-[0_24px_70px_rgba(15,23,42,0.10)] lg:grid-cols-[0.95fr_1.05fr]">
+        <section className="grid w-full overflow-hidden rounded-2xl border border-brand-line bg-white shadow-[0_24px_70px_rgba(13,13,13,0.10)] lg:grid-cols-[0.95fr_1.05fr]">
           <div className="bg-brand-navy p-7 text-white sm:p-10">
-            <Logo markClassName="text-white" textClassName="text-white" />
+            <Logo tone="light" showSilhouette />
             <div className="mt-16 max-w-md">
               <span className="flex h-13 w-13 items-center justify-center rounded-full bg-white/10 text-white">
                 <ShieldCheck className="h-6 w-6" />
               </span>
-              <p className="mt-7 text-sm font-bold uppercase tracking-wide text-blue-200">DriveAuto Admin</p>
-              <h1 className="mt-3 text-3xl font-bold tracking-[-0.04em] sm:text-4xl">
+              <p className="mt-7 text-sm font-bold uppercase text-white/75">DriveAuto Admin</p>
+              <h1 className="mt-3 text-3xl font-bold sm:text-4xl">
                 Přístup do administrace
               </h1>
-              <p className="mt-4 text-sm leading-6 text-blue-100">
+              <p className="mt-4 text-sm leading-6 text-white/75">
                 Administrace je v MVP režimu chráněná jednoduchým heslem. Plná správa uživatelů bude doplněna v další fázi.
               </p>
             </div>
@@ -27,8 +27,8 @@ export function AdminLoginScreen() {
 
           <div className="p-7 sm:p-10">
             <div className="mx-auto max-w-md">
-              <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">Ověření správce</p>
-              <h2 className="mt-3 text-2xl font-bold tracking-[-0.035em]">Zadejte heslo</h2>
+              <p className="text-sm font-bold uppercase text-brand-blue">Ověření správce</p>
+              <h2 className="mt-3 text-2xl font-bold">Zadejte heslo</h2>
               <p className="mt-3 text-sm leading-6 text-brand-muted">
                 Po ověření se otevře přehled vozů, poptávek a žádostí o prohlídku.
               </p>

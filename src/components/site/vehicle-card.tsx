@@ -1,4 +1,4 @@
-import { ArrowRight, Calendar, Fuel, Gauge, Heart, Settings, ShieldCheck } from "lucide-react";
+import { ArrowRight, Calendar, Fuel, Gauge, Settings, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -11,7 +11,7 @@ export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
   const detailHref = `/nabidka-vozu/${vehicle.slug}`;
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-brand-line bg-white shadow-[0_14px_34px_rgba(8,23,52,0.07)] transition hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(8,23,52,0.10)]">
+    <article className="group overflow-hidden rounded-2xl border border-brand-line bg-white shadow-[0_14px_34px_rgba(13,13,13,0.07)] transition hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(13,13,13,0.10)]">
       <div className="relative aspect-[4/3] overflow-hidden bg-brand-soft">
         <Link href={detailHref} className="absolute inset-0 block" aria-label={`Zobrazit detail vozu ${vehicle.brand} ${vehicle.model}`}>
           <VehicleImage
@@ -31,20 +31,13 @@ export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
             ) : null}
           </div>
         </Link>
-        <button
-          type="button"
-          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-brand-navy shadow-sm ring-1 ring-brand-line/70 hover:text-brand-blue"
-          aria-label="Přidat do oblíbených"
-        >
-          <Heart className="h-5 w-5" />
-        </button>
       </div>
 
       <div className="p-5">
         <div className="flex min-h-[116px] flex-col">
           <div className="flex items-start justify-between gap-4">
             <Link href={detailHref}>
-              <h3 className="text-lg font-bold tracking-[-0.02em] text-brand-navy transition-colors hover:text-brand-blue">
+              <h3 className="text-lg font-bold text-brand-navy transition-colors hover:text-brand-blue">
                 {vehicle.brand} {vehicle.model}
               </h3>
             </Link>

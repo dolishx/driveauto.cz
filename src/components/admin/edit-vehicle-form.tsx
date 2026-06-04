@@ -150,8 +150,8 @@ export function EditVehicleForm({
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">Upravit vůz</p>
-          <h3 className="mt-1 text-xl font-bold tracking-[-0.03em] text-brand-navy">
+          <p className="text-sm font-bold uppercase text-brand-blue">Upravit vůz</p>
+          <h3 className="mt-1 text-xl font-bold text-brand-navy">
             {vehicle.brand} {vehicle.model}
           </h3>
         </div>
@@ -311,7 +311,7 @@ export function EditVehicleForm({
           accept="image/jpeg,image/png,image/webp"
           multiple
           onChange={(event) => handleImageSelection(event.currentTarget.files)}
-          className="rounded-lg border border-brand-line bg-white px-3 py-2 text-sm text-brand-muted file:mr-4 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-2 file:text-sm file:font-bold file:text-brand-blue hover:file:bg-blue-100 focus:border-brand-blue focus:outline-none"
+          className="rounded-lg border border-brand-line bg-white px-3 py-2 text-sm text-brand-muted file:mr-4 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-2 file:text-sm file:font-bold file:text-brand-blue hover:file:bg-brand-blue/10 focus:border-brand-blue focus:outline-none"
         />
         <label className="flex items-center gap-3 rounded-xl border border-brand-line bg-white px-4 py-3 text-sm font-semibold text-brand-muted">
           <input name="newImagesAsPrimary" type="checkbox" className="h-4 w-4 rounded border-brand-line text-brand-blue" />

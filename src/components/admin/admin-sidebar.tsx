@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-import { Logo } from "@/components/site/logo";
+import { DriveAutoMonogram, Logo } from "@/components/site/logo";
 
 type SidebarItem = {
   label: string;
@@ -62,7 +62,7 @@ export function AdminSidebar() {
         {groups.map((group, index) => (
           <div key={group.title ?? `main-${index}`}>
             {group.title ? (
-              <p className="mb-3 px-3 text-xs font-bold uppercase tracking-wide text-brand-muted">
+              <p className="mb-3 px-3 text-xs font-bold uppercase text-brand-muted">
                 {group.title}
               </p>
             ) : null}
@@ -90,8 +90,8 @@ export function AdminSidebar() {
       </nav>
       <div className="border-t border-brand-line p-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-soft text-sm font-bold text-brand-blue">
-            AD
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-soft">
+            <DriveAutoMonogram className="h-7 w-9" />
           </div>
           <div>
             <p className="font-bold text-brand-navy">Správce webu</p>

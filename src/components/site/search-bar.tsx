@@ -22,7 +22,7 @@ export function SearchBar({
   return (
     <form
       className={cn(
-        "rounded-2xl border border-brand-line bg-white shadow-[0_18px_45px_rgba(8,23,52,0.10)]",
+        "rounded-2xl border border-brand-line bg-white shadow-[0_18px_45px_rgba(13,13,13,0.10)]",
         compact ? "p-4 md:p-5" : "p-4 md:p-6",
         className,
       )}

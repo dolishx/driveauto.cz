@@ -31,12 +31,12 @@ const benefits = [
 export function TrustBenefits() {
   return (
     <section id="vyhody" className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-      <div className="grid gap-8 rounded-3xl border border-brand-line bg-white p-6 shadow-[0_18px_45px_rgba(8,23,52,0.07)] md:p-8 lg:grid-cols-[0.72fr_1.28fr] lg:p-10">
+      <div className="grid gap-8 rounded-3xl border border-brand-line bg-white p-6 shadow-[0_18px_45px_rgba(13,13,13,0.07)] md:p-8 lg:grid-cols-[0.72fr_1.28fr] lg:p-10">
         <div>
-          <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">
+          <p className="text-sm font-bold uppercase text-brand-blue">
             Proč DriveAuto
           </p>
-          <h2 className="mt-4 text-4xl font-bold tracking-[-0.055em] text-brand-navy md:text-5xl">
+          <h2 className="mt-4 text-4xl font-bold text-brand-navy md:text-5xl">
             Důvěra u auta začíná jasnou komunikací
           </h2>
           <p className="mt-5 text-lg leading-8 text-brand-muted">

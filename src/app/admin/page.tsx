@@ -90,17 +90,17 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-brand-navy">
+    <div className="min-h-screen bg-brand-soft text-brand-navy">
       <div className="flex">
         <AdminSidebar />
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <header className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
               <div>
-                <p className="text-sm font-bold uppercase tracking-wide text-brand-blue lg:hidden">
+                <p className="text-sm font-bold uppercase text-brand-blue lg:hidden">
                   DriveAuto Admin
                 </p>
-                <h1 className="mt-1 text-3xl font-bold tracking-[-0.04em] md:text-4xl">Administrace vozů</h1>
+                <h1 className="mt-1 text-3xl font-bold md:text-4xl">Administrace vozů</h1>
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-brand-muted">
                   Jednoduchý MVP přehled pro přípravu skladových vozů, poptávek a budoucí správy kategorií.
                 </p>
@@ -166,7 +166,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                       </span>
                       <div>
                         <p className="text-sm font-semibold text-brand-muted">{stat.label}</p>
-                        <p className="mt-1 text-3xl font-bold tracking-[-0.04em] text-brand-navy">{stat.value}</p>
+                        <p className="mt-1 text-3xl font-bold text-brand-navy">{stat.value}</p>
                         <p className="mt-2 text-sm leading-6 text-brand-muted">{stat.helper}</p>
                       </div>
                     </div>
@@ -184,13 +184,13 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             <section id="vsechny-vozy" className="mt-7 rounded-2xl border border-brand-line bg-white p-5 shadow-sm sm:p-6">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">Všechny vozy</p>
-                  <h2 className="mt-2 text-2xl font-bold tracking-[-0.035em]">Skladová nabídka</h2>
+                  <p className="text-sm font-bold uppercase text-brand-blue">Všechny vozy</p>
+                  <h2 className="mt-2 text-2xl font-bold">Skladová nabídka</h2>
                   <p className="mt-2 text-sm text-brand-muted">
                     Administrativní přehled pro kontrolu stavu vozů, změnu statusu a editaci obsahu nabídky.
                   </p>
                 </div>
-                <a href="#pridat-vuz" className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-brand-blue px-4 text-sm font-semibold text-white shadow-[0_14px_26px_rgba(7,95,232,0.22)] hover:bg-brand-blue-dark">
+                <a href="#pridat-vuz" className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-brand-blue px-4 text-sm font-semibold text-white shadow-[0_14px_26px_rgba(30,64,175,0.22)] hover:bg-brand-blue-dark">
                   <PlusCircle className="h-4 w-4" />
                   Přidat vůz
                 </a>
@@ -213,8 +213,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                   <Database className="h-6 w-6" />
                 </span>
                 <div>
-                  <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">Kategorie / značky / modely</p>
-                  <h2 className="mt-2 text-2xl font-bold tracking-[-0.035em]">Struktura pro budoucí správu katalogu</h2>
+                  <p className="text-sm font-bold uppercase text-brand-blue">Kategorie / značky / modely</p>
+                  <h2 className="mt-2 text-2xl font-bold">Struktura pro budoucí správu katalogu</h2>
                   <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-muted">
                     Tyto sekce zatím nespravují samostatné tabulky. Slouží jako připravené místo pro budoucí číselníky, které sjednotí filtrování a zadávání vozů.
                   </p>
@@ -291,7 +291,7 @@ function LatestVehiclesTable({ vehicles }: { vehicles: Vehicle[] }) {
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[680px] text-left text-sm">
-          <thead className="text-xs uppercase tracking-wide text-brand-muted">
+          <thead className="text-xs uppercase text-brand-muted">
             <tr className="border-b border-brand-line">
               <th className="py-3 font-bold">Vůz</th>
               <th className="py-3 font-bold">Cena</th>
@@ -344,7 +344,7 @@ function StatusBadge({ status }: { status: Vehicle["status"] }) {
         : status === "Archivováno"
           ? "bg-rose-50 text-rose-700"
           : status === "Publikováno"
-            ? "bg-blue-50 text-blue-700"
+            ? "bg-brand-soft text-brand-blue"
       : status === "Rezervováno"
         ? "bg-amber-50 text-amber-800"
         : "bg-emerald-50 text-emerald-700";

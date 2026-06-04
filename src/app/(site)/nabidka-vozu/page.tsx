@@ -20,19 +20,19 @@ export default async function VehicleOfferPage() {
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end">
             <div className="max-w-3xl">
-              <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">
+              <p className="text-sm font-bold uppercase text-brand-blue">
                 Nabídka vozů
               </p>
-              <h1 className="mt-4 text-4xl font-bold tracking-[-0.05em] text-brand-navy md:text-5xl">
+              <h1 className="mt-4 text-4xl font-bold text-brand-navy md:text-5xl">
                 Vozy připravené k osobnímu výběru
               </h1>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-brand-muted">
                 Projděte si aktuální nabídku DriveAuto. Detail vozu, dostupnost a termín prohlídky ověříme před vaší návštěvou.
               </p>
             </div>
-            <div className="rounded-2xl border border-brand-line bg-white p-5 shadow-[0_14px_38px_rgba(8,23,52,0.06)]">
+            <div className="rounded-2xl border border-brand-line bg-white p-5 shadow-[0_14px_38px_rgba(13,13,13,0.06)]">
               <p className="text-sm font-semibold text-brand-muted">Aktuálně v nabídce</p>
-              <p className="mt-2 text-4xl font-bold tracking-[-0.05em] text-brand-blue">
+              <p className="mt-2 text-4xl font-bold text-brand-blue">
                 {vehicleCountLabel}
               </p>
               <p className="mt-3 flex items-start gap-2 text-sm leading-6 text-brand-muted">
@@ -46,7 +46,7 @@ export default async function VehicleOfferPage() {
       </section>
 
       <section className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[300px_1fr] lg:px-8">
-        <aside className="hidden h-fit rounded-2xl border border-brand-line bg-white p-6 shadow-[0_14px_38px_rgba(8,23,52,0.06)] lg:block">
+        <aside className="hidden h-fit rounded-2xl border border-brand-line bg-white p-6 shadow-[0_14px_38px_rgba(13,13,13,0.06)] lg:block">
           <FilterPanel />
         </aside>
 
@@ -101,7 +101,7 @@ export default async function VehicleOfferPage() {
               <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-soft text-brand-blue">
                 <SearchX className="h-6 w-6" />
               </span>
-              <h2 className="mt-5 text-2xl font-bold tracking-[-0.035em] text-brand-navy">
+              <h2 className="mt-5 text-2xl font-bold text-brand-navy">
                 Nabídka je právě bez vozů k zobrazení
               </h2>
               <p className="mx-auto mt-3 max-w-xl leading-7 text-brand-muted">
@@ -114,11 +114,11 @@ export default async function VehicleOfferPage() {
             </div>
           )}
 
-          <div className="mt-8 overflow-hidden rounded-2xl border border-brand-line bg-brand-soft shadow-[0_14px_38px_rgba(8,23,52,0.06)]">
+          <div className="mt-8 overflow-hidden rounded-2xl border border-brand-line bg-brand-soft shadow-[0_14px_38px_rgba(13,13,13,0.06)]">
             <div className="grid gap-6 p-6 md:grid-cols-[1fr_auto] md:items-center md:p-8">
               <div className="min-w-0">
-                <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">Pomoc s výběrem</p>
-                <h2 className="text-2xl font-bold tracking-[-0.03em] text-brand-navy">
+                <p className="text-sm font-bold uppercase text-brand-blue">Pomoc s výběrem</p>
+                <h2 className="text-2xl font-bold text-brand-navy">
                   Nenašli jste ideální vůz?
                 </h2>
                 <p className="mt-2 max-w-2xl leading-7 text-brand-muted">

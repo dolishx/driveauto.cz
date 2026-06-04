@@ -96,9 +96,21 @@ export function AdminVehicleInventory({
         })}
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="grid gap-3 lg:hidden">
+        {filteredVehicles.map((vehicle) => (
+          <MobileVehicleCard
+            key={vehicle.id}
+            vehicle={vehicle}
+            canManageVehicles={canManageVehicles}
+            isEditing={editingVehicle?.id === vehicle.id}
+            leadCount={leadCountsByVehicleId[vehicle.id] ?? 0}
+          />
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto lg:block">
         <table className="w-full min-w-[1120px] text-left text-sm">
-          <thead className="text-xs uppercase tracking-wide text-brand-muted">
+          <thead className="text-xs uppercase text-brand-muted">
             <tr className="border-b border-brand-line">
               <th className="py-3 font-bold">Vůz</th>
               <th className="py-3 font-bold">Parametry</th>
@@ -182,6 +194,57 @@ export function AdminVehicleInventory({
   );
 }
 
+function MobileVehicleCard({
+  vehicle,
+  canManageVehicles,
+  isEditing,
+  leadCount,
+}: {
+  vehicle: Vehicle;
+  canManageVehicles: boolean;
+  isEditing: boolean;
+  leadCount: number;
+}) {
+  return (
+    <article className="rounded-2xl border border-brand-line bg-white p-4 shadow-sm">
+      <VehicleIdentity vehicle={vehicle} />
+      <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+        <InfoPill label="Cena" value={formatPrice(vehicle.price)} strong />
+        <InfoPill label="Stav" value={vehicle.status} />
+        <InfoPill label="Parametry" value={`${vehicle.year} · ${formatMileage(vehicle.mileage)}`} />
+        <InfoPill label="Leady" value={String(leadCount)} />
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <StatusBadge status={vehicle.status} />
+        {vehicle.featured ? (
+          <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-bold text-brand-blue">
+            Doporučeno
+          </span>
+        ) : null}
+        <span className="rounded-full bg-slate-50 px-3 py-1 text-xs font-semibold text-brand-muted">
+          {vehicle.adminStatus ? "Supabase" : "Lokální fallback"}
+        </span>
+      </div>
+      <div className="mt-4">
+        <VehicleActions
+          vehicle={vehicle}
+          canManageVehicles={canManageVehicles}
+          isEditing={isEditing}
+        />
+      </div>
+    </article>
+  );
+}
+
+function InfoPill({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
+  return (
+    <div className="rounded-xl border border-brand-line bg-brand-soft px-3 py-2">
+      <p className="text-xs font-semibold uppercase text-brand-muted">{label}</p>
+      <p className={`mt-1 truncate font-bold ${strong ? "text-brand-blue" : "text-brand-navy"}`}>{value}</p>
+    </div>
+  );
+}
+
 function VehicleIdentity({ vehicle }: { vehicle: Vehicle }) {
   return (
     <div className="flex min-w-0 items-center gap-4">
@@ -208,7 +271,7 @@ function StatusBadge({ status }: { status: Vehicle["status"] }) {
         : status === "Archivováno"
           ? "bg-rose-50 text-rose-700"
           : status === "Publikováno"
-            ? "bg-blue-50 text-blue-700"
+            ? "bg-brand-soft text-brand-blue"
             : status === "Rezervováno"
               ? "bg-amber-50 text-amber-800"
               : "bg-emerald-50 text-emerald-700";
@@ -246,7 +309,7 @@ function VehicleActions({
       <Link
         href={`/admin?editVehicle=${vehicle.id}#upravit-vuz`}
         aria-disabled={disabled}
-        className={`inline-flex h-9 items-center gap-1.5 rounded-lg border border-brand-blue/20 bg-brand-soft px-3 text-xs font-bold text-brand-blue hover:bg-blue-100 ${
+        className={`inline-flex h-9 items-center gap-1.5 rounded-lg border border-brand-blue/20 bg-brand-soft px-3 text-xs font-bold text-brand-blue hover:bg-brand-blue/10 ${
           disabled ? "pointer-events-none opacity-50" : ""
         }`}
       >

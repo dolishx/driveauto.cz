@@ -28,8 +28,8 @@ export function VehicleGallery({ images, vehicleName }: VehicleGalleryProps) {
 
   return (
     <div className="min-w-0">
-      <div className="overflow-hidden rounded-2xl border border-brand-line bg-brand-soft shadow-[0_18px_46px_rgba(8,23,52,0.08)]">
-        <div className="relative aspect-[16/10] min-h-[260px]">
+      <div className="overflow-hidden rounded-2xl border border-brand-line bg-brand-soft shadow-[0_18px_46px_rgba(13,13,13,0.08)]">
+        <div className="relative aspect-[16/10] min-h-[220px] sm:min-h-[260px]">
           <VehicleImage
             src={activeImage}
             alt={vehicleName}
@@ -66,14 +66,14 @@ export function VehicleGallery({ images, vehicleName }: VehicleGalleryProps) {
         </div>
       </div>
 
-      <div className="mt-3 flex gap-3 overflow-x-auto pb-2">
+      <div className="mt-3 flex snap-x gap-3 overflow-x-auto pb-2">
         {galleryImages.length ? (
           galleryImages.map((image, index) => (
             <button
               key={image}
               type="button"
               onClick={() => showImage(index)}
-              className={`relative h-20 w-28 shrink-0 overflow-hidden rounded-xl border bg-brand-soft transition ${
+              className={`relative h-20 w-28 shrink-0 snap-start overflow-hidden rounded-xl border bg-brand-soft transition ${
                 index === activeIndex
                   ? "border-brand-blue ring-4 ring-brand-blue/10"
                   : "border-brand-line hover:border-brand-blue/40"

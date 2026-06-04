@@ -140,8 +140,8 @@ export function LeadManagement({ leads }: { leads: CrmLead[] }) {
     <section id="poptavky" className="mt-7 rounded-2xl border border-brand-line bg-white p-5 shadow-sm sm:p-6">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">CRM leady</p>
-          <h2 className="mt-2 text-2xl font-bold tracking-[-0.035em] text-brand-navy">
+          <p className="text-sm font-bold uppercase text-brand-blue">CRM leady</p>
+          <h2 className="mt-2 text-2xl font-bold text-brand-navy">
             Obchodní pipeline DriveAuto
           </h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-muted">
@@ -319,8 +319,8 @@ function LeadDetailPanel({
     <aside className="rounded-2xl border border-brand-line bg-white p-5 shadow-sm xl:sticky xl:top-24">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-bold uppercase tracking-wide text-brand-blue">{selected.leadId}</p>
-          <h3 className="mt-2 text-xl font-bold tracking-[-0.03em] text-brand-navy">{selected.name}</h3>
+          <p className="text-sm font-bold uppercase text-brand-blue">{selected.leadId}</p>
+          <h3 className="mt-2 text-xl font-bold text-brand-navy">{selected.name}</h3>
           <p className="mt-1 text-sm text-brand-muted">{selected.source}</p>
         </div>
         <button
@@ -405,7 +405,7 @@ function LeadDetailPanel({
 function DetailVehicle({ lead }: { lead: CrmLead }) {
   return (
     <div className="rounded-xl border border-brand-line bg-white px-3 py-3">
-      <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-brand-muted">
+      <p className="flex items-center gap-2 text-xs font-semibold uppercase text-brand-muted">
         <Car className="h-4 w-4 text-brand-blue" />
         Vůz
       </p>
@@ -437,7 +437,7 @@ function InlineInfo({ icon, value }: { icon: ReactNode; value: string }) {
 function DetailLine({ icon, label, value }: { icon?: ReactNode; label: string; value: string }) {
   return (
     <div className="rounded-xl border border-brand-line bg-white px-3 py-3">
-      <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-brand-muted">
+      <p className="flex items-center gap-2 text-xs font-semibold uppercase text-brand-muted">
         {icon ? <span className="text-brand-blue">{icon}</span> : null}
         {label}
       </p>
@@ -449,7 +449,7 @@ function DetailLine({ icon, label, value }: { icon?: ReactNode; label: string; v
 function DetailText({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-brand-line bg-white px-3 py-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-brand-muted">{label}</p>
+      <p className="text-xs font-semibold uppercase text-brand-muted">{label}</p>
       <p className="mt-2 whitespace-pre-line text-sm leading-6 text-brand-navy">{value || "Neuvedeno"}</p>
     </div>
   );
@@ -464,7 +464,7 @@ function StatusBadge({ status }: { status: LeadStatus }) {
         : status === "waiting_decision"
           ? "bg-amber-50 text-amber-800"
           : status === "offer_sent"
-            ? "bg-blue-50 text-brand-blue"
+          ? "bg-brand-soft text-brand-blue"
             : status === "scheduled"
               ? "bg-indigo-50 text-indigo-700"
               : status === "contacted"

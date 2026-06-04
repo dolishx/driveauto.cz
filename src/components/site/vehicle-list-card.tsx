@@ -4,7 +4,6 @@ import {
   CarFront,
   Fuel,
   Gauge,
-  Heart,
   MessageCircle,
   Settings,
   ShieldCheck,
@@ -21,7 +20,7 @@ export function VehicleListCard({ vehicle }: { vehicle: Vehicle }) {
   const detailHref = `/nabidka-vozu/${vehicle.slug}`;
 
   return (
-    <article className="group grid overflow-hidden rounded-2xl border border-brand-line bg-white shadow-[0_12px_32px_rgba(8,23,52,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_46px_rgba(8,23,52,0.11)] md:grid-cols-[286px_1fr]">
+    <article className="group grid overflow-hidden rounded-2xl border border-brand-line bg-white shadow-[0_12px_32px_rgba(13,13,13,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_46px_rgba(13,13,13,0.11)] md:grid-cols-[286px_1fr]">
       <div className="relative aspect-[4/3] overflow-hidden bg-brand-soft md:aspect-auto md:min-h-full">
         <Link href={detailHref} className="absolute inset-0 block" aria-label={`Zobrazit detail vozu ${vehicle.brand} ${vehicle.model}`}>
           <VehicleImage
@@ -41,13 +40,6 @@ export function VehicleListCard({ vehicle }: { vehicle: Vehicle }) {
             ) : null}
           </div>
         </Link>
-        <button
-          type="button"
-          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-brand-navy shadow-sm ring-1 ring-brand-line/70 transition hover:text-brand-blue"
-          aria-label="Přidat do oblíbených"
-        >
-          <Heart className="h-5 w-5" />
-        </button>
       </div>
 
       <div className="grid min-w-0 gap-6 p-5 lg:grid-cols-[minmax(0,1fr)_238px] lg:p-6">
@@ -66,7 +58,7 @@ export function VehicleListCard({ vehicle }: { vehicle: Vehicle }) {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between lg:block">
             <div className="min-w-0">
               <Link href={detailHref}>
-                <h2 className="text-2xl font-bold tracking-[-0.035em] text-brand-navy transition-colors hover:text-brand-blue">
+                <h2 className="text-2xl font-bold text-brand-navy transition-colors hover:text-brand-blue">
                   {vehicle.brand} {vehicle.model}
                 </h2>
               </Link>
@@ -75,7 +67,7 @@ export function VehicleListCard({ vehicle }: { vehicle: Vehicle }) {
               </p>
             </div>
             <div className="rounded-xl border border-brand-line bg-brand-soft/65 px-4 py-3 sm:text-right lg:hidden">
-              <p className="text-xs font-semibold uppercase tracking-wide text-brand-muted">Cena vozu</p>
+              <p className="text-xs font-semibold uppercase text-brand-muted">Cena vozu</p>
               <p className="mt-1 text-2xl font-bold text-brand-blue">{formatPrice(vehicle.price)}</p>
             </div>
           </div>
@@ -90,8 +82,8 @@ export function VehicleListCard({ vehicle }: { vehicle: Vehicle }) {
 
         <div className="flex flex-col gap-5 rounded-2xl border border-brand-line bg-brand-soft/55 p-4 lg:items-stretch">
           <div className="hidden lg:block">
-            <p className="text-xs font-semibold uppercase tracking-wide text-brand-muted">Cena vozu</p>
-            <p className="mt-1 text-3xl font-bold tracking-[-0.035em] text-brand-blue">
+            <p className="text-xs font-semibold uppercase text-brand-muted">Cena vozu</p>
+            <p className="mt-1 text-3xl font-bold text-brand-blue">
               {formatPrice(vehicle.price)}
             </p>
           </div>
@@ -117,7 +109,7 @@ export function VehicleListCard({ vehicle }: { vehicle: Vehicle }) {
 function Spec({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
     <div className="min-w-0 rounded-xl border border-brand-line bg-white px-3 py-3">
-      <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-brand-muted">
+      <p className="flex items-center gap-2 text-xs font-semibold uppercase text-brand-muted">
         <span className="shrink-0 text-brand-blue">{icon}</span>
         {label}
       </p>

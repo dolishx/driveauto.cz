@@ -34,7 +34,7 @@ export default async function ServicesPage() {
               <article
                 key={service.id}
                 id={service.id}
-                className="rounded-2xl border border-brand-line bg-white p-7 shadow-[0_14px_38px_rgba(8,23,52,0.06)]"
+                className="rounded-2xl border border-brand-line bg-white p-7 shadow-[0_14px_38px_rgba(13,13,13,0.06)]"
               >
                 <div className="flex items-start justify-between gap-4">
                   <Icon className="h-12 w-12 text-brand-blue" />

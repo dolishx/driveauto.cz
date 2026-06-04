@@ -42,12 +42,12 @@ export async function generateMetadata({ params }: VehicleDetailPageProps): Prom
 
   if (!vehicle) {
     return {
-      title: "Vůz nebyl nalezen | DriveAuto",
+      title: "Vůz nebyl nalezen",
     };
   }
 
   return {
-    title: `${vehicle.brand} ${vehicle.model} | DriveAuto`,
+    title: `${vehicle.brand} ${vehicle.model}`,
     description: `${vehicle.brand} ${vehicle.model} ${vehicle.variant}. Cena ${formatPrice(vehicle.price)}.`,
   };
 }
@@ -115,7 +115,7 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
   const specTiles = specTileCandidates.flatMap((item) => (item.value ? [{ ...item, value: item.value }] : []));
 
   return (
-    <div className="bg-white">
+    <div className="bg-white pb-24 lg:pb-0">
       <section className="border-b border-brand-line bg-gradient-to-b from-brand-soft/70 to-white">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
           <Link
@@ -142,7 +142,7 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
                 </span>
               </div>
 
-              <h1 className="mt-4 text-4xl font-bold tracking-[-0.055em] text-brand-navy md:text-5xl">
+              <h1 className="mt-4 text-4xl font-bold text-brand-navy md:text-5xl">
                 {vehicleName}
               </h1>
               <p className="mt-3 max-w-3xl text-lg leading-8 text-brand-muted">
@@ -150,9 +150,9 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
               </p>
             </div>
 
-            <aside className="rounded-2xl border border-brand-line bg-white p-5 shadow-[0_16px_40px_rgba(8,23,52,0.08)]">
-              <p className="text-sm font-semibold uppercase tracking-wide text-brand-muted">Cena vozu</p>
-              <p className="mt-2 text-4xl font-bold tracking-[-0.055em] text-brand-blue">
+            <aside className="rounded-2xl border border-brand-line bg-white p-5 shadow-[0_16px_40px_rgba(13,13,13,0.08)]">
+              <p className="text-sm font-semibold uppercase text-brand-muted">Cena vozu</p>
+              <p className="mt-2 text-4xl font-bold text-brand-blue">
                 {formatPrice(vehicle.price)}
               </p>
               <p className="mt-3 flex items-start gap-2 text-sm leading-6 text-brand-muted">
@@ -246,14 +246,14 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
             <SectionCard title="Prohlídka vozu">
               <div className="grid gap-4 md:grid-cols-[1fr_1fr]">
                 <div className="rounded-xl border border-brand-line bg-white p-4">
-                  <p className="text-sm font-semibold uppercase tracking-wide text-brand-muted">Osobní prohlídka</p>
+                  <p className="text-sm font-semibold uppercase text-brand-muted">Osobní prohlídka</p>
                   <p className="mt-2 text-xl font-bold text-brand-navy">Po domluvě termínu</p>
                   <p className="mt-2 text-sm leading-6 text-brand-muted">
                     Vůz připravíme k osobnímu zhlédnutí a zodpovíme technické dotazy.
                   </p>
                 </div>
                 <div className="rounded-xl border border-brand-line bg-white p-4">
-                  <p className="text-sm font-semibold uppercase tracking-wide text-brand-muted">Dotaz k vozu</p>
+                  <p className="text-sm font-semibold uppercase text-brand-muted">Dotaz k vozu</p>
                   <p className="mt-2 text-xl font-bold text-brand-navy">Individuální domluva</p>
                   <p className="mt-2 text-sm leading-6 text-brand-muted">
                     Před návštěvou potvrdíme dostupnost, aktuální stav a detaily k dokumentaci.
@@ -273,8 +273,8 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
           </div>
 
           <aside className="space-y-5 lg:sticky lg:top-24">
-            <section className="rounded-2xl border border-brand-line bg-white p-5 shadow-[0_14px_38px_rgba(8,23,52,0.06)]">
-              <h2 className="text-xl font-bold tracking-[-0.03em] text-brand-navy">Rychlý kontakt</h2>
+            <section className="rounded-2xl border border-brand-line bg-white p-5 shadow-[0_14px_38px_rgba(13,13,13,0.06)]">
+              <h2 className="text-xl font-bold text-brand-navy">Rychlý kontakt</h2>
               <p className="mt-2 text-sm leading-6 text-brand-muted">
                 Vyberte termín prohlídky nebo nám pošlete dotaz k tomuto vozu.
               </p>
@@ -314,6 +314,19 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
           </aside>
         </div>
       </main>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-brand-line bg-white/96 px-4 py-3 shadow-[0_-12px_32px_rgba(13,13,13,0.10)] backdrop-blur lg:hidden">
+        <div className="mx-auto flex max-w-7xl items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs font-semibold uppercase text-brand-muted">Cena vozu</p>
+            <p className="truncate text-lg font-extrabold text-brand-blue">{formatPrice(vehicle.price)}</p>
+          </div>
+          <ButtonLink href="/domluvit-prohlidku" className="h-11 shrink-0 px-4">
+            Prohlídka
+            <ArrowRight className="h-4 w-4" />
+          </ButtonLink>
+        </div>
+      </div>
     </div>
   );
 }
@@ -321,7 +334,7 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
 function SpecTile({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-brand-line bg-white p-4 shadow-sm">
-      <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-brand-muted">
+      <p className="flex items-center gap-2 text-xs font-semibold uppercase text-brand-muted">
         <span className="text-brand-blue">{icon}</span>
         {label}
       </p>
@@ -344,8 +357,8 @@ function GalleryNote({ icon, title, text }: { icon: ReactNode; title: string; te
 
 function SectionCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="rounded-2xl border border-brand-line bg-white p-5 shadow-[0_14px_38px_rgba(8,23,52,0.06)] sm:p-6">
-      <h2 className="text-2xl font-bold tracking-[-0.035em] text-brand-navy">{title}</h2>
+    <section className="rounded-2xl border border-brand-line bg-white p-5 shadow-[0_14px_38px_rgba(13,13,13,0.06)] sm:p-6">
+      <h2 className="text-2xl font-bold text-brand-navy">{title}</h2>
       <div className="mt-5">{children}</div>
     </section>
   );
@@ -369,7 +382,7 @@ function DetailGrid({ rows }: { rows: DetailItem[] }) {
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-brand-line bg-white px-4 py-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-brand-muted">{label}</p>
+      <p className="text-xs font-semibold uppercase text-brand-muted">{label}</p>
       <p className="mt-1 font-bold text-brand-navy">{value}</p>
     </div>
   );
@@ -413,7 +426,7 @@ function ContactLine({ icon, title, value }: { icon: ReactNode; title: string; v
         {icon}
       </span>
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand-muted">{title}</p>
+        <p className="text-xs font-semibold uppercase text-brand-muted">{title}</p>
         <p className="font-bold text-brand-navy">{value}</p>
       </div>
     </div>

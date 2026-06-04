@@ -16,7 +16,7 @@ export function ContactForm() {
 
   return (
     <form
-      className="rounded-2xl border border-brand-line bg-white p-6 shadow-[0_14px_38px_rgba(8,23,52,0.06)]"
+      className="min-w-0 rounded-2xl border border-brand-line bg-white p-5 shadow-[0_14px_38px_rgba(13,13,13,0.06)] sm:p-6"
       onSubmit={async (event) => {
         event.preventDefault();
         setIsSubmitting(true);
@@ -50,21 +50,21 @@ export function ContactForm() {
         <input
           name="name"
           aria-label="Jméno a příjmení"
-          className="h-12 rounded-lg border border-brand-line px-4 text-sm outline-none focus:border-brand-blue"
+          className="h-12 w-full min-w-0 rounded-lg border border-brand-line px-4 text-sm outline-none focus:border-brand-blue"
           placeholder="Jméno a příjmení *"
           required
         />
         <input
           name="phone"
           aria-label="Telefon"
-          className="h-12 rounded-lg border border-brand-line px-4 text-sm outline-none focus:border-brand-blue"
+          className="h-12 w-full min-w-0 rounded-lg border border-brand-line px-4 text-sm outline-none focus:border-brand-blue"
           placeholder="Telefon *"
           required
         />
         <input
           name="email"
           aria-label="E-mail"
-          className="h-12 rounded-lg border border-brand-line px-4 text-sm outline-none focus:border-brand-blue"
+          className="h-12 w-full min-w-0 rounded-lg border border-brand-line px-4 text-sm outline-none focus:border-brand-blue"
           placeholder="E-mail *"
           type="email"
           required
@@ -72,7 +72,7 @@ export function ContactForm() {
         <select
           name="subject"
           aria-label="Předmět zprávy"
-          className="h-12 rounded-lg border border-brand-line px-4 text-sm text-brand-muted outline-none focus:border-brand-blue"
+          className="h-12 w-full min-w-0 rounded-lg border border-brand-line px-4 text-sm text-brand-muted outline-none focus:border-brand-blue"
         >
           <option value="Kontaktní formulář">Předmět zprávy</option>
           <option value="Dotaz k vozu">Dotaz k vozu</option>

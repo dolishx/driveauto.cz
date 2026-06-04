@@ -36,13 +36,13 @@ export default async function AppointmentPage() {
       />
 
       <section className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
-        <div className="rounded-2xl border border-brand-line bg-white p-6 shadow-[0_14px_38px_rgba(8,23,52,0.06)] md:p-8">
+        <div className="min-w-0 rounded-2xl border border-brand-line bg-white p-5 shadow-[0_14px_38px_rgba(13,13,13,0.06)] sm:p-6 md:p-8">
           <AppointmentForm vehicles={vehicles} />
         </div>
 
-        <div className="grid content-start gap-6">
-          <section className="rounded-2xl border border-brand-line bg-white p-6 shadow-[0_14px_38px_rgba(8,23,52,0.06)]">
-            <h2 className="text-2xl font-bold tracking-[-0.03em] text-brand-navy">
+        <div className="grid min-w-0 content-start gap-6">
+          <section className="min-w-0 rounded-2xl border border-brand-line bg-white p-5 shadow-[0_14px_38px_rgba(13,13,13,0.06)] sm:p-6">
+            <h2 className="text-2xl font-bold text-brand-navy">
               Proč si domluvit prohlídku?
             </h2>
             <div className="mt-6 grid gap-5 md:grid-cols-3">
@@ -61,14 +61,14 @@ export default async function AppointmentPage() {
 
           <MapCard />
 
-          <section className="rounded-2xl border border-brand-line bg-white p-6 shadow-[0_14px_38px_rgba(8,23,52,0.06)] md:flex md:items-center md:justify-between">
-            <div>
+          <section className="min-w-0 rounded-2xl border border-brand-line bg-white p-5 shadow-[0_14px_38px_rgba(13,13,13,0.06)] md:flex md:items-center md:justify-between sm:p-6">
+            <div className="min-w-0">
               <h2 className="text-xl font-bold text-brand-navy">Potřebujete poradit?</h2>
               <p className="mt-2 text-brand-muted">
                 Kontaktní údaje budou doplněny po potvrzení finálních údajů provozovatele.
               </p>
             </div>
-            <div className="mt-5 inline-flex h-12 items-center gap-2 rounded-lg border border-brand-line bg-brand-soft px-5 text-sm font-bold text-brand-blue md:mt-0">
+            <div className="mt-5 inline-flex max-w-full items-center gap-2 rounded-lg border border-brand-line bg-brand-soft px-5 py-3 text-sm font-bold text-brand-blue md:mt-0">
               <Phone className="h-4 w-4" />
               Bude doplněno
             </div>

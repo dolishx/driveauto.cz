@@ -17,7 +17,7 @@ export function AppointmentForm({ vehicles }: { vehicles: Vehicle[] }) {
 
   return (
     <form
-      className="grid gap-5"
+      className="grid min-w-0 gap-5"
       onSubmit={async (event) => {
         event.preventDefault();
         setIsSubmitting(true);
@@ -51,7 +51,7 @@ export function AppointmentForm({ vehicles }: { vehicles: Vehicle[] }) {
       <label className="grid gap-2">
         <span className="text-sm font-bold text-brand-navy">Vyberte vůz *</span>
         <FieldIcon icon={<Car className="h-4 w-4" />}>
-          <select name="vehicleId" className="w-full bg-transparent text-sm outline-none" required>
+          <select name="vehicleId" className="w-full min-w-0 bg-transparent text-sm outline-none" required>
             <option value="">Vyberte vůz</option>
             {vehicles.map((vehicle) => (
               <option key={vehicle.id} value={vehicle.id}>
@@ -87,7 +87,7 @@ export function AppointmentForm({ vehicles }: { vehicles: Vehicle[] }) {
 
       <label className="grid gap-2">
         <span className="text-sm font-bold text-brand-navy">Poznámka</span>
-        <textarea name="note" className="min-h-28 rounded-lg border border-brand-line p-4 text-sm outline-none focus:border-brand-blue" placeholder="Napište nám jakékoliv informace k prohlídce (volitelné)" />
+        <textarea name="note" className="min-h-28 w-full min-w-0 rounded-lg border border-brand-line p-4 text-sm outline-none focus:border-brand-blue" placeholder="Napište nám jakékoliv informace k prohlídce (volitelné)" />
       </label>
 
       <div className="rounded-xl bg-brand-soft p-4">
@@ -147,7 +147,7 @@ function Input({
       <FieldIcon icon={icon}>
         <input
           name={name}
-          className="w-full bg-transparent text-sm outline-none"
+          className="w-full min-w-0 bg-transparent text-sm outline-none"
           placeholder={placeholder}
           type={type}
           required={label.includes("*")}
@@ -165,7 +165,7 @@ function FieldIcon({
   children: ReactNode;
 }) {
   return (
-    <span className="flex h-12 items-center gap-3 rounded-lg border border-brand-line px-4 text-brand-muted focus-within:border-brand-blue">
+    <span className="flex h-12 min-w-0 items-center gap-3 rounded-lg border border-brand-line px-4 text-brand-muted focus-within:border-brand-blue">
       {icon}
       {children}
     </span>

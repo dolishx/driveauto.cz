@@ -50,7 +50,7 @@ export function VehicleImage({ src, alt, className = "object-cover", sizes, prio
 
 function VehicleImagePlaceholder() {
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-brand-soft via-white to-blue-50 px-5 text-center text-brand-muted">
+    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-brand-soft via-white to-brand-soft px-5 text-center text-brand-muted">
       <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-brand-blue shadow-sm ring-1 ring-brand-line">
         <ImageOff className="h-6 w-6" />
       </span>

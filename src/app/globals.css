@@ -2,13 +2,14 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #07142f;
-  --brand-blue: #075fe8;
-  --brand-blue-dark: #064fc4;
-  --brand-navy: #07142f;
-  --brand-muted: #657187;
-  --brand-line: #e6ebf3;
-  --brand-soft: #f4f7fc;
+  --foreground: #0d0d0d;
+  --brand-blue: #1e40af;
+  --brand-blue-dark: #17358f;
+  --brand-black: #0d0d0d;
+  --brand-navy: #0d0d0d;
+  --brand-muted: #60646c;
+  --brand-line: #e6e6e6;
+  --brand-soft: #f7f7f7;
 }
 
 @theme inline {
@@ -16,12 +17,13 @@
   --color-foreground: var(--foreground);
   --color-brand-blue: var(--brand-blue);
   --color-brand-blue-dark: var(--brand-blue-dark);
+  --color-brand-black: var(--brand-black);
   --color-brand-navy: var(--brand-navy);
   --color-brand-muted: var(--brand-muted);
   --color-brand-line: var(--brand-line);
   --color-brand-soft: var(--brand-soft);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-montserrat);
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
 * {
@@ -36,7 +38,8 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-montserrat), Arial, Helvetica, sans-serif;
+  letter-spacing: 0;
 }
 
 button,
@@ -47,6 +50,29 @@ textarea {
 }
 
 ::selection {
-  background: rgba(7, 95, 232, 0.16);
+  background: rgba(30, 64, 175, 0.18);
   color: var(--brand-navy);
+}
+
+a,
+button,
+input,
+select,
+textarea,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 3px solid rgba(30, 64, 175, 0.42);
+  outline-offset: 3px;
+}
+
+[class*="tracking-"] {
+  letter-spacing: 0 !important;
 }
