@@ -15,11 +15,11 @@ import {
   WalletCards,
 } from "lucide-react";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { VehicleGallery } from "@/components/site/vehicle-gallery";
 import { ButtonLink } from "@/components/ui/button";
 import { getVehicleBySlug, getVehicles } from "@/lib/data";
 import { formatMileage, formatPrice } from "@/lib/format";
@@ -60,6 +60,9 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
     notFound();
   }
 
+  const vehicleName = `${vehicle.brand} ${vehicle.model}`;
+  const galleryImages = [vehicle.image, ...(vehicle.gallery ?? [])];
+
   return (
     <div className="bg-white">
       <section className="border-b border-brand-line bg-gradient-to-b from-brand-soft/70 to-white">
@@ -89,7 +92,7 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
               </div>
 
               <h1 className="mt-4 text-4xl font-bold tracking-[-0.055em] text-brand-navy md:text-5xl">
-                {vehicle.brand} {vehicle.model}
+                {vehicleName}
               </h1>
               <p className="mt-3 max-w-3xl text-lg leading-8 text-brand-muted">
                 {vehicle.variant}
@@ -123,20 +126,9 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
           <div className="min-w-0 space-y-8">
             <section>
-              <div className="overflow-hidden rounded-2xl border border-brand-line bg-brand-soft shadow-[0_18px_46px_rgba(8,23,52,0.08)]">
-                <div className="relative aspect-[16/10] min-h-[260px]">
-                  <Image
-                    src={vehicle.image}
-                    alt={`${vehicle.brand} ${vehicle.model}`}
-                    fill
-                    priority
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 820px"
-                  />
-                </div>
-              </div>
+              <VehicleGallery images={galleryImages} vehicleName={vehicleName} />
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <GalleryNote icon={<CarFront className="h-5 w-5" />} title="Exteriér" text="Hlavní fotografie vozu" />
+                <GalleryNote icon={<CarFront className="h-5 w-5" />} title="Galerie vozu" text="Fotografie z aktuální nabídky" />
                 <GalleryNote icon={<ShieldCheck className="h-5 w-5" />} title="Stav vozu" text="Ověříme před prohlídkou" />
                 <GalleryNote icon={<Clock className="h-5 w-5" />} title="Prohlídka" text="Termín po domluvě" />
               </div>

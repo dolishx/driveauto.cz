@@ -543,6 +543,9 @@ function mapAppointmentRequestRow(row: AppointmentRequestRow): AppointmentReques
 }
 
 export function mapVehicleRow(row: VehicleRow): Vehicle {
+  const gallery = normalizeGalleryUrls(row.gallery_urls);
+  const image = row.image_url || gallery[0] || "/images/car-superb.jpg";
+
   return {
     id: row.id,
     slug: row.slug || slugify(`${row.brand}-${row.model}-${row.title}-${row.year ?? ""}-${row.id.slice(0, 8)}`),
@@ -555,13 +558,21 @@ export function mapVehicleRow(row: VehicleRow): Vehicle {
     transmission: normalizeTransmission(row.transmission),
     price: row.price_czk ?? 0,
     status: normalizeVehicleStatus(row.status),
-    image: row.image_url || "/images/car-superb.jpg",
-    gallery: Array.isArray(row.gallery_urls) ? row.gallery_urls : [],
+    image,
+    gallery: gallery.length ? gallery : row.image_url ? [row.image_url] : [],
     category: normalizeCategory(row.category),
     featured: Boolean(row.is_featured),
     createdAt: row.created_at ?? "",
     adminStatus: normalizeSupabaseVehicleStatus(row.status),
   };
+}
+
+function normalizeGalleryUrls(value: string[] | null) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.map((item) => item.trim()).filter(Boolean);
 }
 
 function mapServiceRow(row: ServiceRow): Service {

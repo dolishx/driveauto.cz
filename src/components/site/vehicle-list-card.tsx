@@ -9,11 +9,11 @@ import {
   Settings,
   ShieldCheck,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { ButtonLink } from "@/components/ui/button";
+import { VehicleImage } from "@/components/site/vehicle-image";
 import { formatMileage, formatPrice } from "@/lib/format";
 import type { Vehicle } from "@/types";
 
@@ -24,10 +24,9 @@ export function VehicleListCard({ vehicle }: { vehicle: Vehicle }) {
     <article className="group grid overflow-hidden rounded-2xl border border-brand-line bg-white shadow-[0_12px_32px_rgba(8,23,52,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_46px_rgba(8,23,52,0.11)] md:grid-cols-[286px_1fr]">
       <div className="relative aspect-[4/3] overflow-hidden bg-brand-soft md:aspect-auto md:min-h-full">
         <Link href={detailHref} className="absolute inset-0 block" aria-label={`Zobrazit detail vozu ${vehicle.brand} ${vehicle.model}`}>
-          <Image
+          <VehicleImage
             src={vehicle.image}
             alt={`${vehicle.brand} ${vehicle.model}`}
-            fill
             className="object-cover transition duration-300 group-hover:scale-[1.03]"
             sizes="(max-width: 768px) 100vw, 286px"
           />

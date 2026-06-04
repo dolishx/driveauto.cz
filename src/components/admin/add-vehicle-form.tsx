@@ -1,7 +1,16 @@
 "use client";
 
-import { Car, Image as ImageIcon, Save, ShieldAlert, Upload } from "lucide-react";
-import { useActionState, useEffect, useRef, type ReactNode } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Car,
+  Image as ImageIcon,
+  Save,
+  ShieldAlert,
+  Upload,
+  X,
+} from "lucide-react";
+import { useActionState, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { createVehicleAction } from "@/app/admin/vehicle-actions";
 import type { VehicleMutationState } from "@/app/admin/vehicle-actions";
@@ -13,13 +22,104 @@ const initialVehicleMutationState: VehicleMutationState = {
   configured: true,
 };
 
+type SelectedVehicleImage = {
+  id: string;
+  file: File;
+  previewUrl: string;
+};
+
 export function AddVehicleForm({ canManageVehicles }: { canManageVehicles: boolean }) {
   const formRef = useRef<HTMLFormElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const selectedImagesRef = useRef<SelectedVehicleImage[]>([]);
+  const [selectedImages, setSelectedImages] = useState<SelectedVehicleImage[]>([]);
   const [state, formAction, isSubmitting] = useActionState(createVehicleAction, initialVehicleMutationState);
+
+  useEffect(() => {
+    selectedImagesRef.current = selectedImages;
+  }, [selectedImages]);
+
+  useEffect(() => {
+    return () => {
+      selectedImagesRef.current.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+    };
+  }, []);
+
+  function syncImageInput(nextImages: SelectedVehicleImage[]) {
+    if (!imageInputRef.current || typeof DataTransfer === "undefined") {
+      return;
+    }
+
+    const transfer = new DataTransfer();
+    nextImages.forEach((image) => transfer.items.add(image.file));
+    imageInputRef.current.files = transfer.files;
+  }
+
+  function clearSelectedImages() {
+    selectedImagesRef.current.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+    selectedImagesRef.current = [];
+    setSelectedImages([]);
+
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
+    }
+  }
+
+  function handleImageSelection(files: FileList | null) {
+    const nextImages = Array.from(files ?? []).map((file, index) => ({
+      id: `${file.name}-${file.lastModified}-${index}-${crypto.randomUUID()}`,
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }));
+
+    selectedImagesRef.current.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+    selectedImagesRef.current = nextImages;
+    setSelectedImages(nextImages);
+    syncImageInput(nextImages);
+  }
+
+  function removeSelectedImage(imageId: string) {
+    const nextImages = selectedImagesRef.current.filter((image) => {
+      if (image.id === imageId) {
+        URL.revokeObjectURL(image.previewUrl);
+        return false;
+      }
+
+      return true;
+    });
+
+    selectedImagesRef.current = nextImages;
+    setSelectedImages(nextImages);
+    syncImageInput(nextImages);
+  }
+
+  function moveSelectedImage(imageId: string, direction: -1 | 1) {
+    const currentImages = [...selectedImagesRef.current];
+    const currentIndex = currentImages.findIndex((image) => image.id === imageId);
+    const nextIndex = currentIndex + direction;
+
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= currentImages.length) {
+      return;
+    }
+
+    [currentImages[currentIndex], currentImages[nextIndex]] = [
+      currentImages[nextIndex],
+      currentImages[currentIndex],
+    ];
+
+    selectedImagesRef.current = currentImages;
+    setSelectedImages(currentImages);
+    syncImageInput(currentImages);
+  }
 
   useEffect(() => {
     if (state.ok) {
       formRef.current?.reset();
+      const resetTimer = window.setTimeout(() => {
+        clearSelectedImages();
+      }, 0);
+
+      return () => window.clearTimeout(resetTimer);
     }
   }, [state.ok]);
 
@@ -78,14 +178,62 @@ export function AddVehicleForm({ canManageVehicles }: { canManageVehicles: boole
         <Input name="bodyType" label="Karoserie" placeholder="Např. kombi, SUV" />
         <Field label="Fotografie vozu" icon={<Upload className="h-4 w-4" />}>
           <input
-            name="imageFile"
+            ref={imageInputRef}
+            name="imageFiles"
             type="file"
             accept="image/jpeg,image/png,image/webp"
+            multiple
+            onChange={(event) => handleImageSelection(event.currentTarget.files)}
             className="rounded-lg border border-brand-line bg-white px-3 py-2 text-sm text-brand-muted file:mr-4 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-2 file:text-sm file:font-bold file:text-brand-blue hover:file:bg-blue-100 focus:border-brand-blue focus:outline-none"
           />
           <span className="text-xs leading-5 text-brand-muted">
-            Nahrajte hlavní fotografii vozu ve formátu JPG, PNG nebo WebP do 5 MB.
+            Nahrajte fotografie vozu ve formátu JPG, PNG nebo WebP do 5 MB za soubor. První fotografie bude hlavní.
           </span>
+          {selectedImages.length ? (
+            <div className="grid gap-3 rounded-xl border border-brand-line bg-brand-soft/45 p-3 sm:grid-cols-2 xl:grid-cols-3">
+              {selectedImages.map((image, index) => (
+                <div key={image.id} className="overflow-hidden rounded-xl border border-brand-line bg-white shadow-sm">
+                  <div className="relative aspect-[4/3] bg-brand-soft">
+                    <div
+                      className="h-full w-full bg-cover bg-center"
+                      style={{ backgroundImage: `url(${image.previewUrl})` }}
+                    />
+                    <span className="absolute left-2 top-2 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-brand-blue shadow-sm">
+                      {index === 0 ? "Primární" : `Galerie ${index}`}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1 p-2">
+                    <button
+                      type="button"
+                      disabled={index === 0}
+                      onClick={() => moveSelectedImage(image.id, -1)}
+                      className="inline-flex h-9 items-center justify-center rounded-lg border border-brand-line text-brand-navy hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-40"
+                      aria-label="Posunout fotografii doleva"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeSelectedImage(image.id)}
+                      className="inline-flex h-9 items-center justify-center rounded-lg border border-rose-100 text-rose-700 hover:bg-rose-50"
+                      aria-label="Odebrat fotografii"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={index === selectedImages.length - 1}
+                      onClick={() => moveSelectedImage(image.id, 1)}
+                      className="inline-flex h-9 items-center justify-center rounded-lg border border-brand-line text-brand-navy hover:bg-brand-soft disabled:cursor-not-allowed disabled:opacity-40"
+                      aria-label="Posunout fotografii doprava"
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </Field>
         <Field label="Image URL" icon={<ImageIcon className="h-4 w-4" />}>
           <input

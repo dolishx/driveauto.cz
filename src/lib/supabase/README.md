@@ -37,6 +37,10 @@ vehicle photos. Public reads are allowed, but browser uploads are not. Admin
 uploads run through `src/app/admin/vehicle-actions.ts` after the admin session is
 verified and require the server-only `SUPABASE_SERVICE_ROLE_KEY`.
 
+Vehicle gallery uploads are stored under `vehicles/{vehicle-id}/`. The first
+uploaded image becomes `image_url`; the ordered list is stored in
+`gallery_urls`. Manual Image URL is still supported when no files are uploaded.
+
 ## Stable data API
 
 Keep these exports stable so page components do not need to change:

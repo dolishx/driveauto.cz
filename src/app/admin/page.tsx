@@ -12,7 +12,6 @@ import {
   RefreshCw,
   Tag,
 } from "lucide-react";
-import Image from "next/image";
 
 import { logoutAdmin } from "@/app/admin/actions";
 import {
@@ -25,6 +24,7 @@ import { AdminLoginScreen } from "@/components/admin/admin-login-screen";
 import { AddVehicleForm } from "@/components/admin/add-vehicle-form";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { LeadManagement } from "@/components/admin/lead-management";
+import { VehicleImage } from "@/components/site/vehicle-image";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { getAdminVehicles } from "@/lib/admin-data";
 import { hasAdminSession } from "@/lib/admin-auth";
@@ -333,7 +333,7 @@ function VehicleIdentity({ vehicle }: { vehicle: Vehicle }) {
   return (
     <div className="flex min-w-0 items-center gap-4">
       <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-brand-soft">
-        <Image src={vehicle.image} alt="" fill className="object-cover" sizes="80px" />
+        <VehicleImage src={vehicle.image} alt="" className="object-cover" sizes="80px" />
       </div>
       <div className="min-w-0">
         <p className="truncate font-bold text-brand-navy">

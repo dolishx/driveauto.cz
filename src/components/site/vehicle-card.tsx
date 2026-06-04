@@ -1,9 +1,9 @@
 import { ArrowRight, Calendar, Fuel, Gauge, Heart, Settings, ShieldCheck } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { ButtonLink } from "@/components/ui/button";
+import { VehicleImage } from "@/components/site/vehicle-image";
 import { formatMileage, formatPrice } from "@/lib/format";
 import type { Vehicle } from "@/types";
 
@@ -14,10 +14,9 @@ export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
     <article className="group overflow-hidden rounded-2xl border border-brand-line bg-white shadow-[0_14px_34px_rgba(8,23,52,0.07)] transition hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(8,23,52,0.10)]">
       <div className="relative aspect-[4/3] overflow-hidden bg-brand-soft">
         <Link href={detailHref} className="absolute inset-0 block" aria-label={`Zobrazit detail vozu ${vehicle.brand} ${vehicle.model}`}>
-          <Image
+          <VehicleImage
             src={vehicle.image}
             alt={`${vehicle.brand} ${vehicle.model}`}
-            fill
             className="object-cover transition duration-300 group-hover:scale-[1.03]"
             sizes="(max-width: 768px) 100vw, 25vw"
           />

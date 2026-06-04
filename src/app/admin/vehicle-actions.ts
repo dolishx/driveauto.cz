@@ -13,6 +13,7 @@ const missingServiceRoleMessage = "Správa vozů vyžaduje serverový Supabase k
 const missingSessionMessage = "Administrace vyžaduje platné přihlášení.";
 const vehicleImageBucket = "vehicle-images";
 const maxVehicleImageSize = 5 * 1024 * 1024;
+const maxVehicleImageCount = 12;
 const allowedVehicleImageTypes = new Map([
   ["image/jpeg", "jpg"],
   ["image/png", "png"],
@@ -52,29 +53,37 @@ export async function createVehicleAction(
   if ("error" in model) return { ok: false, configured: true, error: model.error };
 
   const year = textValue(formData.get("year"));
+  const vehicleId = randomUUID();
   const slug = await createUniqueVehicleSlug({
     brand: brand.value,
     model: model.value,
     title: title.value,
     year,
   });
-  const imageUpload = await uploadVehicleImage({
+  const imageUpload = await uploadVehicleImages({
     supabase,
-    imageFile: formData.get("imageFile"),
-    slug,
+    imageFiles: collectVehicleImageFiles(formData),
+    vehicleId,
   });
 
   if (!imageUpload.ok) {
     return imageUpload;
   }
 
-  const uploadedImageUrl = imageUpload.publicUrl;
-  const imageUrl = uploadedImageUrl || normalizeImageUrl(textValue(formData.get("imageUrl")));
+  const manualImageUrl = emptyToNull(textValue(formData.get("imageUrl")));
+  const uploadedImageUrls = imageUpload.publicUrls;
+  const imageUrl = uploadedImageUrls[0] ?? manualImageUrl ?? normalizeImageUrl("");
+  const galleryUrls = uploadedImageUrls.length
+    ? uploadedImageUrls
+    : manualImageUrl
+      ? [manualImageUrl]
+      : null;
 
   try {
     const { data, error } = await supabase
       .from("vehicles")
       .insert({
+        id: vehicleId,
         slug,
         title: title.value,
         brand: brand.value,
@@ -93,13 +102,14 @@ export async function createVehicleAction(
         status: normalizeVehicleStatus(textValue(formData.get("status"))),
         is_featured: formData.get("isFeatured") === "on",
         image_url: imageUrl,
-        gallery_urls: uploadedImageUrl ? [uploadedImageUrl] : null,
+        gallery_urls: galleryUrls,
         description: emptyToNull(textValue(formData.get("description"))),
       })
       .select("id,slug")
       .single();
 
     if (error) {
+      await removeUploadedVehicleImages(supabase, imageUpload.storagePaths);
       return { ok: false, configured: true, error: error.message };
     }
 
@@ -113,6 +123,8 @@ export async function createVehicleAction(
       vehicleSlug: data?.slug ?? slug,
     };
   } catch (error) {
+    await removeUploadedVehicleImages(supabase, imageUpload.storagePaths);
+
     return {
       ok: false,
       configured: true,
@@ -249,66 +261,129 @@ async function assertAdminMutationAllowed(): Promise<VehicleMutationState | null
   return null;
 }
 
-async function uploadVehicleImage({
+type VehicleImageUploadResult =
+  | {
+      ok: true;
+      configured: true;
+      publicUrls: string[];
+      storagePaths: string[];
+    }
+  | {
+      ok: false;
+      configured: true;
+      error: string;
+      publicUrls: string[];
+      storagePaths: string[];
+    };
+
+async function uploadVehicleImages({
   supabase,
-  imageFile,
-  slug,
+  imageFiles,
+  vehicleId,
 }: {
   supabase: NonNullable<ReturnType<typeof getSupabaseServiceClient>>;
-  imageFile: FormDataEntryValue | null;
-  slug: string;
-}): Promise<VehicleMutationState & { publicUrl?: string }> {
-  if (!isUploadFile(imageFile)) {
-    return { ok: true, configured: true };
+  imageFiles: File[];
+  vehicleId: string;
+}): Promise<VehicleImageUploadResult> {
+  if (!imageFiles.length) {
+    return { ok: true, configured: true, publicUrls: [], storagePaths: [] };
   }
 
-  const extension = allowedVehicleImageTypes.get(imageFile.type);
-
-  if (!extension) {
+  if (imageFiles.length > maxVehicleImageCount) {
     return {
       ok: false,
       configured: true,
-      error: "Fotografie musí být ve formátu JPG, PNG nebo WebP.",
+      error: `Najednou lze nahrát maximálně ${maxVehicleImageCount} fotografií vozu.`,
+      publicUrls: [],
+      storagePaths: [],
     };
   }
 
-  if (imageFile.size > maxVehicleImageSize) {
-    return {
-      ok: false,
-      configured: true,
-      error: "Fotografie může mít maximálně 5 MB.",
-    };
-  }
+  for (const imageFile of imageFiles) {
+    const extension = allowedVehicleImageTypes.get(imageFile.type);
 
-  const storagePath = `${slug}/${Date.now()}-${randomUUID()}.${extension}`;
-
-  try {
-    const { error } = await supabase.storage
-      .from(vehicleImageBucket)
-      .upload(storagePath, await imageFile.arrayBuffer(), {
-        contentType: imageFile.type,
-        upsert: false,
-      });
-
-    if (error) {
-      console.error("[Supabase storage] vehicle image upload failed", error.message);
-      return { ok: false, configured: true, error: uploadFailureMessage };
+    if (!extension) {
+      return {
+        ok: false,
+        configured: true,
+        error: "Fotografie musí být ve formátu JPG, PNG nebo WebP.",
+        publicUrls: [],
+        storagePaths: [],
+      };
     }
 
-    const { data } = supabase.storage.from(vehicleImageBucket).getPublicUrl(storagePath);
-
-    return {
-      ok: true,
-      configured: true,
-      publicUrl: data.publicUrl,
-    };
-  } catch (error) {
-    console.error(
-      "[Supabase storage] vehicle image upload failed",
-      error instanceof Error ? error.message : error,
-    );
-    return { ok: false, configured: true, error: uploadFailureMessage };
+    if (imageFile.size > maxVehicleImageSize) {
+      return {
+        ok: false,
+        configured: true,
+        error: "Každá fotografie může mít maximálně 5 MB.",
+        publicUrls: [],
+        storagePaths: [],
+      };
+    }
   }
+
+  const publicUrls: string[] = [];
+  const storagePaths: string[] = [];
+
+  for (const [index, imageFile] of imageFiles.entries()) {
+    const extension = allowedVehicleImageTypes.get(imageFile.type) ?? "jpg";
+    const fileName = index === 0 ? "main" : `gallery-${index}`;
+    const storagePath = `vehicles/${vehicleId}/${fileName}.${extension}`;
+
+    try {
+      const { error } = await supabase.storage
+        .from(vehicleImageBucket)
+        .upload(storagePath, await imageFile.arrayBuffer(), {
+          contentType: imageFile.type,
+          upsert: false,
+        });
+
+      if (error) {
+        console.error("[Supabase storage] vehicle image upload failed", error.message);
+        await removeUploadedVehicleImages(supabase, storagePaths);
+        return { ok: false, configured: true, error: uploadFailureMessage, publicUrls, storagePaths };
+      }
+
+      const { data } = supabase.storage.from(vehicleImageBucket).getPublicUrl(storagePath);
+
+      publicUrls.push(data.publicUrl);
+      storagePaths.push(storagePath);
+    } catch (error) {
+      console.error(
+        "[Supabase storage] vehicle image upload failed",
+        error instanceof Error ? error.message : error,
+      );
+      await removeUploadedVehicleImages(supabase, storagePaths);
+      return { ok: false, configured: true, error: uploadFailureMessage, publicUrls, storagePaths };
+    }
+  }
+
+  return {
+    ok: true,
+    configured: true,
+    publicUrls,
+    storagePaths,
+  };
+}
+
+async function removeUploadedVehicleImages(
+  supabase: NonNullable<ReturnType<typeof getSupabaseServiceClient>>,
+  storagePaths: string[],
+) {
+  if (!storagePaths.length) {
+    return;
+  }
+
+  const { error } = await supabase.storage.from(vehicleImageBucket).remove(storagePaths);
+
+  if (error) {
+    console.error("[Supabase storage] vehicle image cleanup failed", error.message);
+  }
+}
+
+function collectVehicleImageFiles(formData: FormData) {
+  return [...formData.getAll("imageFiles"), formData.get("imageFile")].filter(isUploadFile);
 }
 
 function isUploadFile(value: FormDataEntryValue | null): value is File {

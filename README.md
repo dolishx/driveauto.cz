@@ -43,7 +43,7 @@ npm run build
 - Forms are wired to submission helpers and write to Supabase only when the public Supabase env vars are configured.
 - Admin access is protected by a simple MVP password gate. This is not full user authentication.
 - Admin vehicle mutations require `SUPABASE_SERVICE_ROLE_KEY` and run only through server-side actions after the admin cookie check.
-- Vehicle photo uploads use Supabase Storage through server-side admin actions. Manual Image URL remains available as a fallback.
+- Vehicle photo uploads use Supabase Storage through server-side admin actions. Multiple uploaded photos are stored as a gallery, and manual Image URL remains available as a fallback.
 - No email sending or notification workflow is implemented yet.
 - Contact details, address, statutory company identifiers, and opening hours are intentionally not shown until real values are provided.
 - Financing is presented only as a future service.
@@ -102,6 +102,19 @@ access for stored vehicle photos and intentionally does not add browser upload
 policies. Uploads are performed server-side through the admin vehicle Server
 Action using `SUPABASE_SERVICE_ROLE_KEY`.
 
+Uploaded vehicle photos use this Storage structure:
+
+```txt
+vehicle-images/
+  vehicles/{vehicle-id}/main.jpg
+  vehicles/{vehicle-id}/gallery-1.webp
+  vehicles/{vehicle-id}/gallery-2.png
+```
+
+The first uploaded file is saved as `image_url` and the ordered uploaded list is
+saved to `gallery_urls`. If no files are uploaded, the optional manual Image URL
+continues to work as the vehicle image fallback.
+
 If the SQL migration cannot be applied, create the bucket manually in Supabase:
 
 1. Go to Storage.
@@ -124,7 +137,7 @@ If linking requires different account permissions, apply the SQL files through t
 
 The public pages read through `src/lib/data.ts`. That layer tries Supabase first when `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are configured, then falls back to local seed data if Supabase is unavailable.
 
-Admin vehicle mutations and image uploads use Server Actions in `src/app/admin/vehicle-actions.ts` and the server-only client in `src/lib/supabase/server.ts`. They require `ADMIN_PASSWORD` for access and `SUPABASE_SERVICE_ROLE_KEY` for database writes and Storage uploads.
+Admin vehicle mutations and image/gallery uploads use Server Actions in `src/app/admin/vehicle-actions.ts` and the server-only client in `src/lib/supabase/server.ts`. They require `ADMIN_PASSWORD` for access and `SUPABASE_SERVICE_ROLE_KEY` for database writes and Storage uploads.
 
 Additional notes live in `src/lib/supabase/README.md`.
 
