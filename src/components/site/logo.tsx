@@ -28,18 +28,18 @@ export function Logo({
           markClassName,
         )}
       >
-        <DriveAutoMonogram tone={tone} className="h-7 w-10" />
+        <DriveAutoMonogram tone={tone} className="h-7 w-11" />
       </span>
       <span className={cn("leading-none", textClassName)}>
         {showSilhouette ? (
           <CarSilhouette
             className={cn(
-              "mb-0.5 h-4 w-36",
+              "mb-0.5 h-5 w-44 sm:w-52",
               isLight ? "text-white" : "text-brand-black",
             )}
           />
         ) : null}
-        <DriveAutoWordmark tone={tone} className="text-[1.35rem] sm:text-[1.48rem]" />
+        <DriveAutoWordmark tone={tone} className="h-7 w-44 sm:h-8 sm:w-52" />
       </span>
     </Link>
   );
@@ -49,16 +49,36 @@ export function DriveAutoWordmark({ className, tone = "dark" }: { className?: st
   const isLight = tone === "light";
 
   return (
-    <span
-      className={cn(
-        "inline-flex items-baseline font-extrabold uppercase leading-none",
-        className,
-      )}
+    <svg
+      viewBox="0 0 332 54"
+      className={cn("block", className)}
+      preserveAspectRatio="xMinYMid meet"
       aria-hidden="true"
     >
-      <span className={isLight ? "text-white" : "text-brand-black"}>DRIVE</span>
-      <span className="text-brand-blue italic">AUTO</span>
-    </span>
+      <text
+        x="0"
+        y="41"
+        fill={isLight ? "#FFFFFF" : "#0D0D0D"}
+        fontFamily="Montserrat, Arial, sans-serif"
+        fontSize="42"
+        fontWeight="900"
+        letterSpacing="0"
+      >
+        DRIVE
+      </text>
+      <text
+        x="148"
+        y="41"
+        fill="#1E40AF"
+        fontFamily="Montserrat, Arial, sans-serif"
+        fontSize="42"
+        fontStyle="italic"
+        fontWeight="900"
+        letterSpacing="0"
+      >
+        AUTO
+      </text>
+    </svg>
   );
 }
 
@@ -66,21 +86,21 @@ export function DriveAutoMonogram({ className, tone = "dark" }: { className?: st
   const isLight = tone === "light";
 
   return (
-    <svg viewBox="0 0 86 54" className={className} aria-hidden="true" role="img">
+    <svg viewBox="0 0 96 56" className={className} aria-hidden="true" role="img">
       <path
-        d="M7 42.5H27.5C40 42.5 48.5 34.5 48.5 23.5C48.5 12.9 40.4 6.5 28.3 6.5H12.4L7 17.1H27.2C32.8 17.1 36.2 20.1 36.2 25C36.2 30.3 32.6 33.5 26.7 33.5H12.1L7 42.5Z"
+        d="M5.5 45.5H31.8C49.1 45.5 60.8 35.9 60.8 23.4C60.8 11.1 50.2 4.5 34.4 4.5H16.2L10.7 15.6H33.2C41.2 15.6 46.2 19.9 46.2 26.5C46.2 33.8 40.7 38.3 31.3 38.3H9.2L5.5 45.5Z"
         fill={isLight ? "#FFFFFF" : "#0D0D0D"}
       />
       <path
-        d="M43.2 42.5L66.3 6.5H79.5L81.5 42.5H68.7L68.4 36.7H55.1L51.5 42.5H43.2ZM60.4 28.1H68L67.4 17.3L60.4 28.1Z"
+        d="M47.2 45.5L74.1 4.5H89.6L93.5 45.5H79.7L79.1 38H63.3L58.6 45.5H47.2ZM69 28.7H78.3L77.5 15.8L69 28.7Z"
         fill="#1E40AF"
       />
       <path
-        d="M14.5 4.4H40.8C46.8 4.4 51.9 5.8 55.7 8.7"
+        d="M17.2 1.8H44.8C56.8 1.8 66 4.6 72.2 10.2"
         fill="none"
         stroke={isLight ? "#FFFFFF" : "#0D0D0D"}
         strokeLinecap="round"
-        strokeWidth="4"
+        strokeWidth="4.6"
       />
     </svg>
   );
@@ -88,34 +108,35 @@ export function DriveAutoMonogram({ className, tone = "dark" }: { className?: st
 
 export function CarSilhouette({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 210 42" className={className} aria-hidden="true">
+    <svg viewBox="0 0 280 58" className={className} aria-hidden="true" preserveAspectRatio="xMinYMid meet">
       <path
-        d="M8 32C34 13 63 6 91 9C110 11 130 14 151 8C166 3 185 6 203 18"
+        d="M10 43C43 22 82 10 119 12C147 13.5 164 23 194 14.5C221 6.7 247 12.2 270 27.5C248.5 25.8 229 25.7 210.5 27.5C188 29.7 173 31 149 26.8C125 22.6 103.5 21.6 78 27.5C53.2 33.2 32.2 38.8 10 43Z"
         fill="none"
         stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="5"
+      />
+      <path
+        d="M107 12C130 8.5 151 10.5 178 17.2C159.5 18.6 145.6 21.5 125.2 20.5"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="4.2"
+      />
+      <path
+        d="M70 40C76 29.5 93 29.5 100 40"
+        fill="none"
+        stroke="#1E40AF"
         strokeLinecap="round"
         strokeWidth="5"
       />
       <path
-        d="M88 8C105 6 121 8 139 12C126 14 115 16 102 15"
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="4"
-      />
-      <path
-        d="M58 31C62 23 76 23 82 31"
+        d="M197 40C204 29.5 222 29.5 230 40"
         fill="none"
         stroke="#1E40AF"
         strokeLinecap="round"
-        strokeWidth="4"
-      />
-      <path
-        d="M151 31C156 23 171 23 177 31"
-        fill="none"
-        stroke="#1E40AF"
-        strokeLinecap="round"
-        strokeWidth="4"
+        strokeWidth="5"
       />
     </svg>
   );
