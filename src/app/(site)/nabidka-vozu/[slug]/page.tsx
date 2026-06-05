@@ -2,9 +2,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Calendar,
-  CarFront,
   CheckCircle2,
-  Clock,
   Fuel,
   Gauge,
   Mail,
@@ -178,11 +176,6 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
           <div className="min-w-0 space-y-8">
             <section>
               <VehicleGallery images={galleryImages} vehicleName={vehicleName} />
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <GalleryNote icon={<CarFront className="h-5 w-5" />} title="Galerie vozu" text="Fotografie z aktuální nabídky" />
-                <GalleryNote icon={<ShieldCheck className="h-5 w-5" />} title="Stav vozu" text="Ověříme před prohlídkou" />
-                <GalleryNote icon={<Clock className="h-5 w-5" />} title="Prohlídka" text="Termín po domluvě" />
-              </div>
             </section>
 
             {specTiles.length ? (
@@ -339,18 +332,6 @@ function SpecTile({ icon, label, value }: { icon: ReactNode; label: string; valu
         {label}
       </p>
       <p className="mt-2 text-lg font-bold text-brand-navy">{value}</p>
-    </div>
-  );
-}
-
-function GalleryNote({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {
-  return (
-    <div className="rounded-xl border border-brand-line bg-white p-4 shadow-sm">
-      <p className="flex items-center gap-2 font-bold text-brand-navy">
-        <span className="text-brand-blue">{icon}</span>
-        {title}
-      </p>
-      <p className="mt-1 text-sm text-brand-muted">{text}</p>
     </div>
   );
 }
