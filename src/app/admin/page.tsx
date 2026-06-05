@@ -289,7 +289,29 @@ function LatestVehiclesTable({ vehicles }: { vehicles: Vehicle[] }) {
           Všechny vozy
         </a>
       </div>
-      <div className="overflow-x-auto">
+      <div className="grid gap-3 md:hidden">
+        {vehicles.map((vehicle) => (
+          <article key={vehicle.id} className="rounded-2xl border border-brand-line bg-brand-soft/45 p-4">
+            <VehicleIdentity vehicle={vehicle} />
+            <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+              <div className="rounded-xl border border-brand-line bg-white px-3 py-2">
+                <p className="text-xs font-bold uppercase text-brand-muted">Cena</p>
+                <p className="mt-1 font-extrabold text-brand-blue">{formatPrice(vehicle.price)}</p>
+              </div>
+              <div className="rounded-xl border border-brand-line bg-white px-3 py-2">
+                <p className="text-xs font-bold uppercase text-brand-muted">Stav</p>
+                <div className="mt-1">
+                  <StatusBadge status={vehicle.status} />
+                </div>
+              </div>
+            </div>
+            <p className="mt-3 text-xs font-semibold text-brand-muted">
+              Vytvořeno: {vehicle.createdAt || "Lokální fallback"}
+            </p>
+          </article>
+        ))}
+      </div>
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full min-w-[680px] text-left text-sm">
           <thead className="text-xs uppercase text-brand-muted">
             <tr className="border-b border-brand-line">

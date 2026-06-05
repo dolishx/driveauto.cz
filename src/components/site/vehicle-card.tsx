@@ -34,16 +34,19 @@ export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
       </div>
 
       <div className="p-5">
-        <div className="flex min-h-[116px] flex-col">
-          <div className="flex items-start justify-between gap-4">
+        <div className="flex min-h-[132px] flex-col">
+          <div>
+            <p className="text-xs font-bold uppercase text-brand-muted">Cena vozu</p>
+            <p className="mt-1 text-2xl font-extrabold leading-tight text-brand-blue">
+              {formatPrice(vehicle.price)}
+            </p>
+          </div>
+          <div className="mt-3">
             <Link href={detailHref}>
-              <h3 className="text-lg font-bold text-brand-navy transition-colors hover:text-brand-blue">
+              <h3 className="text-lg font-extrabold leading-snug text-brand-navy transition-colors hover:text-brand-blue">
                 {vehicle.brand} {vehicle.model}
               </h3>
             </Link>
-            <p className="shrink-0 text-right text-lg font-bold text-brand-blue">
-              {formatPrice(vehicle.price)}
-            </p>
           </div>
           <p className="mt-1 line-clamp-2 text-sm leading-6 text-brand-muted">{vehicle.variant}</p>
           <p className="mt-auto inline-flex items-center gap-2 pt-3 text-xs font-semibold text-brand-muted">

@@ -56,7 +56,11 @@ export function AdminSidebar() {
   return (
     <aside className="hidden min-h-screen w-72 border-r border-brand-line bg-white lg:flex lg:flex-col">
       <div className="flex h-24 items-center px-7">
-        <Logo />
+        <Logo
+          className="gap-2.5"
+          markClassName="h-10 w-12"
+          textClassName="[&>svg]:h-7 [&>svg]:w-40"
+        />
       </div>
       <nav className="flex-1 space-y-7 px-5 py-4">
         {groups.map((group, index) => (

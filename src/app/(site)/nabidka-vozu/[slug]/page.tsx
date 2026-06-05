@@ -7,6 +7,7 @@ import {
   Gauge,
   Mail,
   MapPin,
+  MessageCircle,
   Phone,
   Settings,
   ShieldCheck,
@@ -114,60 +115,42 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
             Zpět na nabídku vozů
           </Link>
 
-          <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-brand-blue shadow-sm ring-1 ring-brand-line">
-                  {vehicle.status}
+          <div className="mt-6 max-w-4xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-brand-blue shadow-sm ring-1 ring-brand-line">
+                {vehicle.status}
+              </span>
+              {vehicle.featured ? (
+                <span className="rounded-full bg-brand-blue px-3 py-1 text-xs font-bold text-white shadow-sm">
+                  Doporučeno
                 </span>
-                {vehicle.featured ? (
-                  <span className="rounded-full bg-brand-blue px-3 py-1 text-xs font-bold text-white shadow-sm">
-                    Doporučeno
-                  </span>
-                ) : null}
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-brand-muted shadow-sm ring-1 ring-brand-line">
-                  {vehicle.category}
-                </span>
-              </div>
-
-              <h1 className="mt-4 text-4xl font-bold text-brand-navy md:text-5xl">
-                {vehicleName}
-              </h1>
-              <p className="mt-3 max-w-3xl text-lg leading-8 text-brand-muted">
-                {vehicle.variant}
-              </p>
+              ) : null}
+              <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-brand-muted shadow-sm ring-1 ring-brand-line">
+                {vehicle.category}
+              </span>
             </div>
 
-            <aside className="rounded-2xl border border-brand-line bg-white p-5 shadow-[0_16px_40px_rgba(13,13,13,0.08)]">
-              <p className="text-sm font-semibold uppercase text-brand-muted">Cena vozu</p>
-              <p className="mt-2 text-4xl font-bold text-brand-blue">
-                {formatPrice(vehicle.price)}
-              </p>
-              <p className="mt-3 flex items-start gap-2 text-sm leading-6 text-brand-muted">
-                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-blue" />
-                Dostupnost, stav a termín prohlídky potvrdíme před návštěvou.
-              </p>
-              <div className="mt-5 grid gap-2">
-                <ButtonLink href="/domluvit-prohlidku" className="h-12 w-full">
-                  Domluvit prohlídku
-                  <ArrowRight className="h-4 w-4" />
-                </ButtonLink>
-                <ButtonLink href="/kontakt" variant="secondary" className="h-12 w-full">
-                  Zeptat se na vůz
-                </ButtonLink>
-              </div>
-            </aside>
+            <h1 className="mt-4 text-4xl font-extrabold text-brand-navy md:text-5xl">
+              {vehicleName}
+            </h1>
+            <p className="mt-3 max-w-3xl text-lg leading-8 text-brand-muted">
+              {vehicle.variant}
+            </p>
           </div>
         </div>
       </section>
 
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
-          <div className="min-w-0 space-y-8">
-            <section>
-              <VehicleGallery images={galleryImages} vehicleName={vehicleName} />
-            </section>
+          <section className="min-w-0">
+            <VehicleGallery images={galleryImages} vehicleName={vehicleName} />
+          </section>
 
+          <PriceActionPanel price={vehicle.price} />
+        </div>
+
+        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+          <div className="min-w-0 space-y-8">
             {specTiles.length ? (
               <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {specTiles.map((item) => (
@@ -293,17 +276,64 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
       </main>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-brand-line bg-white/96 px-4 py-3 shadow-[0_-12px_32px_rgba(13,13,13,0.10)] backdrop-blur lg:hidden">
-        <div className="mx-auto flex max-w-7xl items-center gap-3">
+        <div className="mx-auto flex max-w-7xl items-center gap-2">
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-semibold uppercase text-brand-muted">Cena vozu</p>
-            <p className="truncate text-lg font-extrabold text-brand-blue">{formatPrice(vehicle.price)}</p>
+            <p className="truncate text-[11px] font-semibold uppercase text-brand-muted">Cena</p>
+            <p className="truncate text-base font-extrabold text-brand-blue sm:text-lg">{formatPrice(vehicle.price)}</p>
           </div>
+          <ButtonLink href="/kontakt" variant="secondary" className="h-11 shrink-0 px-3">
+            Dotaz
+          </ButtonLink>
           <ButtonLink href="/domluvit-prohlidku" className="h-11 shrink-0 px-4">
             Prohlídka
             <ArrowRight className="h-4 w-4" />
           </ButtonLink>
         </div>
       </div>
+    </div>
+  );
+}
+
+function PriceActionPanel({ price }: { price: number }) {
+  return (
+    <aside className="rounded-2xl border border-brand-line bg-white p-5 shadow-[0_18px_46px_rgba(13,13,13,0.08)] lg:sticky lg:top-24">
+      <p className="text-sm font-bold uppercase text-brand-muted">Cena vozu</p>
+      <p className="mt-2 text-4xl font-extrabold leading-tight text-brand-blue sm:text-5xl lg:text-4xl">
+        {formatPrice(price)}
+      </p>
+      <p className="mt-3 flex items-start gap-2 text-sm leading-6 text-brand-muted">
+        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-blue" />
+        Dostupnost, stav a termín prohlídky potvrdíme před návštěvou.
+      </p>
+
+      <div className="mt-5 grid gap-2">
+        <ButtonLink href="/domluvit-prohlidku" className="h-12 w-full">
+          Domluvit prohlídku
+          <ArrowRight className="h-4 w-4" />
+        </ButtonLink>
+        <ButtonLink href="/kontakt" variant="secondary" className="h-12 w-full">
+          Zeptat se na vůz
+        </ButtonLink>
+      </div>
+
+      <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+        <ContactActionPlaceholder icon={<Phone className="h-4 w-4" />} title="Zavolat" value="Telefon bude doplněn" />
+        <ContactActionPlaceholder icon={<MessageCircle className="h-4 w-4" />} title="WhatsApp" value="Bude doplněno" />
+      </div>
+    </aside>
+  );
+}
+
+function ContactActionPlaceholder({ icon, title, value }: { icon: ReactNode; title: string; value: string }) {
+  return (
+    <div className="flex min-w-0 items-center gap-3 rounded-xl border border-brand-line bg-brand-soft/65 px-3 py-3">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-brand-blue shadow-sm">
+        {icon}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-sm font-bold text-brand-navy">{title}</span>
+        <span className="block truncate text-xs font-semibold text-brand-muted">{value}</span>
+      </span>
     </div>
   );
 }

@@ -29,14 +29,14 @@ export function SearchBar({
       onSubmit={(event) => event.preventDefault()}
     >
       {showCategories ? (
-        <div className="mb-5 flex flex-wrap gap-2 border-b border-brand-line pb-4">
+        <div className="mb-5 grid grid-cols-2 gap-2 border-b border-brand-line pb-4 sm:flex sm:flex-wrap">
           {categories.map((item) => (
             <button
               key={item}
               type="button"
               onClick={() => setCategory(item)}
               className={cn(
-                "inline-flex h-10 items-center gap-2 rounded-lg px-4 text-sm font-semibold transition-colors",
+                "inline-flex h-11 items-center justify-center gap-2 rounded-lg px-3 text-center text-sm font-semibold transition-colors sm:h-10 sm:justify-start sm:px-4",
                 category === item
                   ? "bg-brand-soft text-brand-blue"
                   : "text-brand-muted hover:bg-brand-soft hover:text-brand-navy",
@@ -49,7 +49,7 @@ export function SearchBar({
         </div>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_1fr_0.85fr_0.9fr_0.9fr_auto]">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_0.85fr_0.9fr_0.9fr_auto]">
         <SearchField label="Značka" compact={compact} icon={<Tag className="h-4 w-4" />}>
           <option>Vyberte značku</option>
           <option>Škoda</option>

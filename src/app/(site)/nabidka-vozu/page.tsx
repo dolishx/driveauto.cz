@@ -76,12 +76,12 @@ export default async function VehicleOfferPage() {
                 </p>
               </div>
             </div>
-            <label className="grid gap-2 text-sm font-semibold text-brand-muted sm:flex sm:items-center sm:justify-end">
+            <label className="grid min-w-0 gap-2 text-sm font-semibold text-brand-muted sm:flex sm:items-center sm:justify-end">
               <span className="flex items-center gap-2">
                 <ArrowUpDown className="h-4 w-4 text-brand-blue" />
                 Řazení
               </span>
-              <select className="h-11 min-w-48 rounded-lg border border-brand-line bg-white px-3 text-brand-navy outline-none transition focus:border-brand-blue">
+              <select className="h-11 w-full min-w-0 rounded-lg border border-brand-line bg-white px-3 text-brand-navy outline-none transition focus:border-brand-blue sm:w-auto sm:min-w-48">
                 <option>Nejnovější v nabídce</option>
                 <option>Cena od nejnižší</option>
                 <option>Nejnižší nájezd</option>

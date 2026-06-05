@@ -40,6 +40,37 @@ const statusOptions: LeadStatus[] = [
   "rejected",
 ];
 
+const statusToneClasses: Record<LeadStatus, { badge: string; card: string }> = {
+  new: {
+    badge: "bg-brand-blue text-white",
+    card: "border-l-brand-blue",
+  },
+  contacted: {
+    badge: "bg-slate-100 text-slate-700",
+    card: "border-l-slate-400",
+  },
+  scheduled: {
+    badge: "bg-indigo-50 text-indigo-700",
+    card: "border-l-indigo-500",
+  },
+  offer_sent: {
+    badge: "bg-sky-50 text-sky-700",
+    card: "border-l-sky-500",
+  },
+  waiting_decision: {
+    badge: "bg-amber-50 text-amber-800",
+    card: "border-l-amber-500",
+  },
+  closed: {
+    badge: "bg-emerald-50 text-emerald-700",
+    card: "border-l-emerald-500",
+  },
+  rejected: {
+    badge: "bg-rose-50 text-rose-700",
+    card: "border-l-rose-500",
+  },
+};
+
 const pipelineFilters: Array<{ id: LeadStatus | "all"; label: string }> = [
   { id: "all", label: "Vše" },
   ...statusOptions.map((status) => ({ id: status, label: statusLabels[status] })),
@@ -239,9 +270,11 @@ function LeadCard({
   onOpen: () => void;
   onStatusChange: (status: LeadStatus) => void;
 }) {
+  const tone = statusToneClasses[lead.status];
+
   return (
     <article
-      className={`rounded-2xl border bg-white p-4 shadow-sm transition ${
+      className={`rounded-2xl border border-l-4 bg-white p-4 shadow-sm transition ${tone.card} ${
         isActive ? "border-brand-blue/50 ring-4 ring-brand-blue/10" : "border-brand-line hover:border-brand-blue/35"
       }`}
     >
@@ -456,23 +489,10 @@ function DetailText({ label, value }: { label: string; value: string }) {
 }
 
 function StatusBadge({ status }: { status: LeadStatus }) {
-  const className =
-    status === "closed"
-      ? "bg-emerald-50 text-emerald-700"
-      : status === "rejected"
-        ? "bg-rose-50 text-rose-700"
-        : status === "waiting_decision"
-          ? "bg-amber-50 text-amber-800"
-          : status === "offer_sent"
-          ? "bg-brand-soft text-brand-blue"
-            : status === "scheduled"
-              ? "bg-indigo-50 text-indigo-700"
-              : status === "contacted"
-                ? "bg-slate-100 text-slate-700"
-                : "bg-brand-soft text-brand-blue";
+  const className = statusToneClasses[status].badge;
 
   return (
-    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${className}`}>
+    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold shadow-sm ${className}`}>
       {statusLabels[status]}
     </span>
   );

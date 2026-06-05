@@ -57,18 +57,18 @@ export function VehicleListCard({ vehicle }: { vehicle: Vehicle }) {
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between lg:block">
             <div className="min-w-0">
+              <div className="mb-3 rounded-xl border border-brand-line bg-brand-soft/65 px-4 py-3 lg:hidden">
+                <p className="text-xs font-bold uppercase text-brand-muted">Cena vozu</p>
+                <p className="mt-1 text-3xl font-extrabold leading-tight text-brand-blue">{formatPrice(vehicle.price)}</p>
+              </div>
               <Link href={detailHref}>
-                <h2 className="text-2xl font-bold text-brand-navy transition-colors hover:text-brand-blue">
+                <h2 className="text-2xl font-extrabold text-brand-navy transition-colors hover:text-brand-blue">
                   {vehicle.brand} {vehicle.model}
                 </h2>
               </Link>
               <p className="mt-2 text-sm leading-6 text-brand-muted sm:text-base">
                 {vehicle.variant}
               </p>
-            </div>
-            <div className="rounded-xl border border-brand-line bg-brand-soft/65 px-4 py-3 sm:text-right lg:hidden">
-              <p className="text-xs font-semibold uppercase text-brand-muted">Cena vozu</p>
-              <p className="mt-1 text-2xl font-bold text-brand-blue">{formatPrice(vehicle.price)}</p>
             </div>
           </div>
 
@@ -83,8 +83,11 @@ export function VehicleListCard({ vehicle }: { vehicle: Vehicle }) {
         <div className="flex flex-col gap-5 rounded-2xl border border-brand-line bg-brand-soft/55 p-4 lg:items-stretch">
           <div className="hidden lg:block">
             <p className="text-xs font-semibold uppercase text-brand-muted">Cena vozu</p>
-            <p className="mt-1 text-3xl font-bold text-brand-blue">
+            <p className="mt-1 text-3xl font-extrabold text-brand-blue">
               {formatPrice(vehicle.price)}
+            </p>
+            <p className="mt-2 text-xs font-semibold leading-5 text-brand-muted">
+              Cena je hlavní orientační údaj. Dostupnost potvrdíme před prohlídkou.
             </p>
           </div>
           <div className="grid gap-2">

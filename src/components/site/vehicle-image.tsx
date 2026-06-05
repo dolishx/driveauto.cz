@@ -29,6 +29,7 @@ export function VehicleImage({ src, alt, className = "object-cover", sizes, prio
       <img
         src={normalizedSrc}
         alt={alt}
+        loading={priority ? "eager" : "lazy"}
         className={`absolute inset-0 h-full w-full ${className}`}
         onError={() => setFailed(true)}
       />
@@ -40,7 +41,7 @@ export function VehicleImage({ src, alt, className = "object-cover", sizes, prio
       src={normalizedSrc}
       alt={alt}
       fill
-      priority={priority}
+      loading={priority ? "eager" : undefined}
       className={className}
       sizes={sizes}
       onError={() => setFailed(true)}
