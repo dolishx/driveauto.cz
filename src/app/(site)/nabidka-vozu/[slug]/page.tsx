@@ -80,16 +80,6 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
     { label: "Pohon", value: vehicle.drivetrain },
     { label: "Emisní norma", value: vehicle.emissionStandard },
   ]);
-  const historyRows = compactDetailRows([
-    { label: "VIN", value: vehicle.vin },
-    { label: "Štítek SPZ", value: vehicle.licensePlate },
-    { label: "Země původu", value: vehicle.originCountry },
-    { label: "První registrace", value: formatDate(vehicle.firstRegistration) },
-    { label: "STK platná do", value: formatDate(vehicle.stkValidUntil) },
-    { label: "Počet majitelů", value: formatCount(vehicle.ownersCount) },
-    { label: "Servisní historie", value: vehicle.serviceHistory },
-    { label: "Historie poškození", value: vehicle.accidentHistory },
-  ]);
   const conditionRows = compactDetailRows([
     { label: "Aktuální stav", value: vehicle.status },
     { label: "Stav vozu", value: vehicle.conditionNote },
@@ -202,12 +192,6 @@ export default async function VehicleDetailPage({ params }: VehicleDetailPagePro
             {technicalRows.length ? (
               <SectionCard title="Technické údaje">
                 <DetailGrid rows={technicalRows} />
-              </SectionCard>
-            ) : null}
-
-            {historyRows.length ? (
-              <SectionCard title="Historie a původ">
-                <DetailGrid rows={historyRows} />
               </SectionCard>
             ) : null}
 
@@ -376,24 +360,6 @@ function compactDetailRows(rows: DetailItem[]) {
       value: row.value?.trim(),
     }))
     .filter((row): row is DetailItem & { value: string } => Boolean(row.value));
-}
-
-function formatDate(value?: string) {
-  if (!value) {
-    return undefined;
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("cs-CZ", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(date);
 }
 
 function formatCount(value?: number) {
