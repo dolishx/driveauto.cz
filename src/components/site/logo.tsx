@@ -108,35 +108,36 @@ export function DriveAutoMonogram({ className, tone = "dark" }: { className?: st
 
 export function CarSilhouette({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 280 58" className={className} aria-hidden="true" preserveAspectRatio="xMinYMid meet">
+    <svg viewBox="0 0 320 72" className={className} aria-hidden="true" preserveAspectRatio="xMinYMid meet">
       <path
-        d="M10 43C43 22 82 10 119 12C147 13.5 164 23 194 14.5C221 6.7 247 12.2 270 27.5C248.5 25.8 229 25.7 210.5 27.5C188 29.7 173 31 149 26.8C125 22.6 103.5 21.6 78 27.5C53.2 33.2 32.2 38.8 10 43Z"
+        d="M9 50C42 28 74 15 107 10C132 6 164 8 199 20C172 23 150 28 126 27C100 26 75 31 51 39C32 45 19 49 9 50Z"
         fill="none"
         stroke="currentColor"
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeWidth="5"
+        strokeWidth="5.4"
       />
       <path
-        d="M107 12C130 8.5 151 10.5 178 17.2C159.5 18.6 145.6 21.5 125.2 20.5"
+        d="M167 24C193 22 216 15 234 19C253 23 276 32 312 25"
         fill="none"
         stroke="currentColor"
         strokeLinecap="round"
-        strokeWidth="4.2"
+        strokeLinejoin="round"
+        strokeWidth="5.4"
       />
       <path
-        d="M70 40C76 29.5 93 29.5 100 40"
+        d="M82 52C91 36 117 36 128 52"
         fill="none"
         stroke="#1E40AF"
         strokeLinecap="round"
-        strokeWidth="5"
+        strokeWidth="5.2"
       />
       <path
-        d="M197 40C204 29.5 222 29.5 230 40"
+        d="M232 52C242 36 270 36 281 52"
         fill="none"
         stroke="#1E40AF"
         strokeLinecap="round"
-        strokeWidth="5"
+        strokeWidth="5.2"
       />
     </svg>
   );
